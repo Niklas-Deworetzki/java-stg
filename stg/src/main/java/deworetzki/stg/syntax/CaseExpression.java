@@ -1,6 +1,7 @@
 package deworetzki.stg.syntax;
 
 import deworetzki.parse.Position;
+import deworetzki.stg.visitor.Visitor;
 
 import java.util.List;
 
@@ -12,18 +13,29 @@ import java.util.List;
  */
 public final class CaseExpression extends Expression {
     public final Expression scrutinized;
-    public final List<Alternative> alternatives;
+    public final List<Alternative<? extends Alternative.NonDefault>> alternatives;
+    public final Alternative<Alternative.Default> defaultAlternative;
 
-    public CaseExpression(Position position, Expression scrutinized, List<Alternative> alternatives) {
+
+    public CaseExpression(Position position, Expression scrutinized,
+                          List<Alternative<? extends Alternative.NonDefault>> alternatives,
+                          Alternative<Alternative.Default> defaultAlternative) {
         super(position);
         this.scrutinized = scrutinized;
         this.alternatives = alternatives;
+        this.defaultAlternative = defaultAlternative;
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+        return visitor.visit(this);
     }
 
     @Override
     public String toString() {
         return formatTree("case",
                 formatMember("expression", scrutinized.toString()),
-                formatMember("alternatives", alternatives));
+                formatMember("alternatives", alternatives),
+                formatMember("default", defaultAlternative.toString()));
     }
 }

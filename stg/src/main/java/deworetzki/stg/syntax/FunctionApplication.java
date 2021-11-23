@@ -1,6 +1,7 @@
 package deworetzki.stg.syntax;
 
 import deworetzki.parse.Position;
+import deworetzki.stg.visitor.Visitor;
 
 import java.util.List;
 
@@ -15,6 +16,12 @@ public final class FunctionApplication extends Application {
         super(position, arguments);
         this.function = function;
     }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+        return visitor.visit(this);
+    }
+
 
     @Override
     public String toString() {

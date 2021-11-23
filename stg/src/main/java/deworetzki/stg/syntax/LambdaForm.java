@@ -1,6 +1,7 @@
 package deworetzki.stg.syntax;
 
 import deworetzki.parse.Position;
+import deworetzki.stg.visitor.Visitor;
 
 import java.util.List;
 
@@ -25,6 +26,11 @@ public final class LambdaForm extends Node {
         this.isUpdateable = isUpdateable;
         this.arguments = arguments;
         this.body = body;
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+        return visitor.visit(this);
     }
 
     @Override

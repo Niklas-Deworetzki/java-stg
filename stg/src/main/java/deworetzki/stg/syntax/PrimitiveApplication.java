@@ -1,6 +1,7 @@
 package deworetzki.stg.syntax;
 
 import deworetzki.parse.Position;
+import deworetzki.stg.visitor.Visitor;
 
 import java.util.List;
 
@@ -13,6 +14,12 @@ public final class PrimitiveApplication extends Application {
     public PrimitiveApplication(Position position, String operation, List<Atom> arguments) {
         super(position, arguments);
         this.operation = operation;
+    }
+
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+        return visitor.visit(this);
     }
 
     @Override

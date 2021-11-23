@@ -1,6 +1,7 @@
 package deworetzki.stg.syntax;
 
 import deworetzki.parse.Position;
+import deworetzki.stg.visitor.Visitor;
 
 import java.util.List;
 
@@ -16,6 +17,11 @@ public final class ConstructorApplication extends Application {
     public ConstructorApplication(Position position, Constructor constructor, List<Atom> arguments) {
         super(position, arguments);
         this.constructor = constructor;
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+        return visitor.visit(this);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package deworetzki.stg.syntax;
 
 import deworetzki.parse.Position;
+import deworetzki.stg.visitor.Visitor;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,6 +13,8 @@ public abstract class Node {
     public Node(Position position) {
         this.position = position;
     }
+
+    public abstract <R> R accept(Visitor<R> visitor);
 
     /**
      * Creates a String representation for a list as member variable.

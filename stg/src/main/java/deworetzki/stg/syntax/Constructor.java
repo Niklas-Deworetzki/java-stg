@@ -1,6 +1,7 @@
 package deworetzki.stg.syntax;
 
 import deworetzki.parse.Position;
+import deworetzki.stg.visitor.Visitor;
 
 /**
  * This class encapsulates {@link Constructor} values.
@@ -15,6 +16,11 @@ public final class Constructor extends Node {
     public Constructor(Position position, String name) {
         super(position);
         this.name = name;
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+        return visitor.visit(this);
     }
 
     @Override

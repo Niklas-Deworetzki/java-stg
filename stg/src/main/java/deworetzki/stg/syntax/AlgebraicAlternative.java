@@ -1,6 +1,7 @@
 package deworetzki.stg.syntax;
 
 import deworetzki.parse.Position;
+import deworetzki.stg.visitor.Visitor;
 
 import java.util.List;
 
@@ -9,7 +10,7 @@ import java.util.List;
  * <p>
  * The alternative matches, if the value is of the same value and all arguments match.
  */
-public final class AlgebraicAlternative extends Alternative {
+public final class AlgebraicAlternative extends Alternative<Alternative.Algebraic> {
     public final Constructor constructor;
     public final List<Atom> arguments;
 
@@ -17,6 +18,11 @@ public final class AlgebraicAlternative extends Alternative {
         super(position, expression);
         this.constructor = constructor;
         this.arguments = arguments;
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+        return visitor.visit(this);
     }
 
     @Override
