@@ -1,14 +1,22 @@
 package deworetzki.stg.utils;
 
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 
-public final class FunctionUtils {
-    private FunctionUtils() throws IllegalAccessException {
+public final class CollectionUtils {
+    private CollectionUtils() throws IllegalAccessException {
         throw new IllegalAccessException("No instances of this class are allowed!");
+    }
+
+    public static <E> List<E> take(int amount, final Deque<E> deque) {
+        List<E> result = new ArrayList<>(amount);
+        for (int i = 0; i < amount; i++) {
+            result.add(deque.pop());
+        }
+        return result;
     }
 
     public static <K, V, R> Map<K, R> mapValues(final Map<K, V> map,
@@ -19,6 +27,17 @@ public final class FunctionUtils {
             result.put(entry.getKey(), function.apply(entry.getValue()));
         }
         return result;
+    }
+
+    public static <A, B> void combineWith(final Iterable<A> as, final Iterable<B> bs,
+                                          final BiConsumer<A, B> combinator) {
+        combineWith(as.iterator(), bs.iterator(), combinator);
+    }
+
+    public static <A, B> void combineWith(final Iterator<A> as, final Iterator<B> bs,
+                                          final BiConsumer<A, B> combinator) {
+        while (as.hasNext() && bs.hasNext())
+            combinator.accept(as.next(), bs.next());
     }
 
     public static <A, B, R> Iterable<R> zipWith(final Iterable<A> as, final Iterable<B> bs,

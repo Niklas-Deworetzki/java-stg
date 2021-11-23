@@ -7,7 +7,7 @@ import deworetzki.stg.syntax.Variable;
 import java.util.*;
 
 import static deworetzki.stg.semantic.Value.Address;
-import static deworetzki.stg.utils.FunctionUtils.mapValues;
+import static deworetzki.stg.utils.CollectionUtils.mapValues;
 
 /**
  * The {@link Heap} is a mapping from addresses to {@link Closure closures}.
@@ -20,6 +20,11 @@ public final class Heap {
         contents.put(nextFreeAddress, closure);
         return nextFreeAddress;
     }
+
+    public Closure get(int address) {
+        return contents.get(address);
+    }
+
 
     // TODO: Define interface
 
