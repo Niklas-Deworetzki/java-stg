@@ -23,4 +23,17 @@ public final class Variable extends Atom {
     public String toString() {
         return name;
     }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Variable var) {
+            return this.name.equals(var.name);
+        }
+        return false;
+    }
 }
