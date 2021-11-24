@@ -14,6 +14,10 @@ public final class Variable extends Atom {
         this.name = name;
     }
 
+    public Variable(String name) {
+        this(Position.NONE, name);
+    }
+
     @Override
     public <R> R accept(Visitor<R> visitor) {
         return visitor.visit(this);

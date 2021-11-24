@@ -19,6 +19,10 @@ public final class ConstructorApplication extends Application {
         this.constructor = constructor;
     }
 
+    public ConstructorApplication(Constructor constructor, List<? extends Atom> arguments) {
+        this(Position.NONE, constructor, arguments);
+    }
+
     @Override
     public <R> R accept(Visitor<R> visitor) {
         return visitor.visit(this);

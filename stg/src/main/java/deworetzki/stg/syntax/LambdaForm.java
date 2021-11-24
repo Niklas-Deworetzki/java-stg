@@ -28,6 +28,10 @@ public final class LambdaForm extends Node {
         this.body = body;
     }
 
+    public LambdaForm(List<Variable> freeVariables, boolean isUpdateable, List<Variable> parameter, Expression body) {
+        this(Position.NONE, freeVariables, isUpdateable, parameter, body);
+    }
+
     @Override
     public <R> R accept(Visitor<R> visitor) {
         return visitor.visit(this);
