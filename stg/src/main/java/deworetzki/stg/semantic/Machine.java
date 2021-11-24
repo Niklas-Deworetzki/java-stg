@@ -34,11 +34,11 @@ public class Machine {
             // TODO: length(as) >= length(xs) must be true?
             // TODO: closure.code().isUpdateable == false
 
-            List<Value> arguments = take(closure.code().arguments.size(), argumentStack);
+            List<Value> arguments = take(closure.code().parameter.size(), argumentStack);
 
             final var localEnvironment = mkLocalEnv(
                     closure.code().freeVariables, closure.capture(),
-                    closure.code().arguments, arguments);
+                    closure.code().parameter, arguments);
             code = new Code.Eval(closure.code().body, localEnvironment);
         }
     }
