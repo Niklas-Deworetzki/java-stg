@@ -11,7 +11,7 @@ import static deworetzki.stg.semantic.Value.*;
 import static deworetzki.stg.utils.CollectionUtils.*;
 
 public class Machine {
-    public static final Expression ENTRY_POINT = new Variable(Position.NONE, "main");
+    public static final Expression ENTRY_POINT = new Variable("main");
 
     private Code code = new Code.Eval(ENTRY_POINT, Collections.emptyMap());
     private final Deque<Value> argumentStack = new LinkedList<>();
