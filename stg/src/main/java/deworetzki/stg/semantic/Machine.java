@@ -85,6 +85,12 @@ public class Machine {
             returnStack.push(new Continuation(expression.alternatives, localEnvironment));
             return new Code.Eval(expression.scrutinized, localEnvironment);
         }
+
+        @Override
+        public Code visit(ConstructorApplication application) {
+            List<Value> arguments = values(localEnvironment, globalEnvironment, application.arguments);
+            return new Code.ReturnConstructor(application.constructor, arguments);
+        }
     }
 
     /**

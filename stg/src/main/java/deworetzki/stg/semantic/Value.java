@@ -4,8 +4,10 @@ import deworetzki.stg.syntax.Atom;
 import deworetzki.stg.syntax.Literal;
 import deworetzki.stg.syntax.Variable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public interface Value {
 
@@ -45,6 +47,14 @@ public interface Value {
         } else {
             return getValue(localEnvironment, globalEnvironment, (Variable) atom);
         }
+    }
+
+    static List<Value> values(Map<Variable, Value> localEnvironment,
+                                 Map<Variable, Value> globalEnvironment,
+                                 List<Atom> atoms) {
+        return atoms.stream()
+                .map(atom -> value(localEnvironment, globalEnvironment, atom))
+                .collect(Collectors.toList());
     }
 
     private static <K, V> V getValue(Map<K, V> local, Map<K, V> global, K key) {

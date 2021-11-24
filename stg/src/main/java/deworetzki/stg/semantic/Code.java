@@ -1,9 +1,11 @@
 package deworetzki.stg.semantic;
 
+import deworetzki.stg.syntax.Atom;
 import deworetzki.stg.syntax.Constructor;
 import deworetzki.stg.syntax.Expression;
 import deworetzki.stg.syntax.Variable;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,7 +34,7 @@ public interface Code {
      * Return the given {@link Constructor} applied to the given {@link Value values}
      *  to the continuation on the return stack.
      */
-    record ReturnConstructor(Constructor constructor, Value... values) implements Code {
+    record ReturnConstructor(Constructor constructor, List<Value> arguments) implements Code {
     }
 
     /**
