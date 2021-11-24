@@ -7,7 +7,7 @@ import deworetzki.stg.visitor.Visitor;
  * A primitive alternative matches only if the scrutinized value
  * equals the {@link Literal} provided.
  */
-public final class PrimitiveAlternative extends Alternative<Alternative.Primitive> {
+public final class PrimitiveAlternative extends Alternative {
     public final Literal literal;
 
     public PrimitiveAlternative(Position position, Literal literal, Expression expression) {

@@ -10,7 +10,7 @@ import java.util.List;
  * <p>
  * The alternative matches, if the value is of the same value and all arguments match.
  */
-public final class AlgebraicAlternative extends Alternative<Alternative.Algebraic> {
+public final class AlgebraicAlternative extends Alternative {
     public final Constructor constructor;
     public final List<Atom> arguments;
 

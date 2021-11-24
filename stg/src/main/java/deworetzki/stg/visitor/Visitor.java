@@ -18,6 +18,8 @@ public interface Visitor<R> extends Consumer<Node>, Function<Node, R> {
 
     R visit(AlgebraicAlternative alternative);
 
+    R visit(Alternatives alternatives);
+
     R visit(Bind bind);
 
     R visit(CaseExpression expression);
@@ -26,7 +28,7 @@ public interface Visitor<R> extends Consumer<Node>, Function<Node, R> {
 
     R visit(ConstructorApplication application);
 
-    R visit(DefaultAlternative alternative);
+    R visit(DefaultFallthroughAlternative alternative);
 
     R visit(FunctionApplication application);
 
@@ -36,7 +38,7 @@ public interface Visitor<R> extends Consumer<Node>, Function<Node, R> {
 
     R visit(Literal literal);
 
-    R visit(NameBindingAlternative alternative);
+    R visit(DefaultBindingAlternative alternative);
 
     R visit(PrimitiveAlternative alternative);
 

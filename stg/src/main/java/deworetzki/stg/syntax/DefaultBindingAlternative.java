@@ -4,13 +4,13 @@ import deworetzki.parse.Position;
 import deworetzki.stg.visitor.Visitor;
 
 /**
- * A default {@link Alternative} that matches any value but
+ * A {@link DefaultAlternative} that matches any value and
  * binds the value to a {@link Variable name}.
  */
-public final class NameBindingAlternative extends Alternative<Alternative.Default> {
+public final class DefaultBindingAlternative extends DefaultAlternative {
     public final Variable variable;
 
-    public NameBindingAlternative(Position position, Variable variable, Expression expression) {
+    public DefaultBindingAlternative(Position position, Variable variable, Expression expression) {
         super(position, expression);
         this.variable = variable;
     }
