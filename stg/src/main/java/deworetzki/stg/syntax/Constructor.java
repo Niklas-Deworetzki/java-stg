@@ -27,4 +27,9 @@ public final class Constructor extends Node {
     public String toString() {
         return name;
     }
+
+
+    public static boolean areEqual(Constructor c1, Constructor c2) {
+        return c1.name.equals(c2.name); // TODO: Optimize? And equals/hashcode
+    }
 }
