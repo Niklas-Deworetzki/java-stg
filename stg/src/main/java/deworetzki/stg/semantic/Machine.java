@@ -96,6 +96,8 @@ public class Machine {
 
                 // Enter the closure of the function.
                 return new Code.Enter(a.address());
+            } else if (function instanceof UnboxedInt k) {
+                return new Code.ReturnInteger(k.value());
             }
 
             return null;
@@ -117,6 +119,11 @@ public class Machine {
         public Code visit(ConstructorApplication application) {
             List<Value> arguments = values(localEnvironment, globalEnvironment, application.arguments);
             return new Code.ReturnConstructor(application.constructor, arguments);
+        }
+
+        @Override
+        public Code visit(Literal literal) {
+            return new Code.ReturnInteger(literal.value);
         }
     }
 
