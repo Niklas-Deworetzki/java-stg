@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * A Variable is a name referring to a heap allocated closure.
  */
-public final class Variable extends Atom {
+public final class Variable extends Node implements Atom {
     public final String name;
 
     public Variable(Position position, String name) {

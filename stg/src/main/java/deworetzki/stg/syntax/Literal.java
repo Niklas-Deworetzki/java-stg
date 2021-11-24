@@ -6,7 +6,7 @@ import deworetzki.stg.visitor.Visitor;
 /**
  * A {@link Literal} describes a primitive integer value.
  */
-public final class Literal extends Atom {
+public final class Literal extends Expression implements Atom {
     public final int value;
 
     public Literal(Position position, int value) {
