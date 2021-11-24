@@ -14,6 +14,12 @@ public final class Heap {
         return contents.lastKey() + 1;
     }
 
+    public int allocate(Closure closure) {
+        final int nextFreeAddress = nextFreeAddress();
+        contents.put(nextFreeAddress, closure);
+        return nextFreeAddress;
+    }
+
     public Iterable<Integer> reserveMany(int n) {
         final int nextFreeAddress = nextFreeAddress();
         return () -> IntStream.range(nextFreeAddress, nextFreeAddress + n).iterator();

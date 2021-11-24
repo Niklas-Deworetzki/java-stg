@@ -40,6 +40,32 @@ public class Machine {
                     closure.code().freeVariables, closure.capture(),
                     closure.code().parameter, arguments);
             code = new Code.Eval(closure.code().body, localEnvironment);
+        } else if (code instanceof Code.ReturnConstructor cons) {
+            final Continuation continuation = returnStack.pop();
+
+            for (Alternative alternative : continuation.alternatives()) {
+                AlgebraicAlternative algebraicAlternative = (AlgebraicAlternative) alternative;
+                // Find matching alternative (if present) and exit early.
+                if (Constructor.areEqual(cons.constructor(), algebraicAlternative.constructor)) {
+                    code = new Code.Eval(algebraicAlternative.expression, continuation.savedEnvironment());
+                    return;
+                }
+            }
+
+            if (continuation.alternatives().defaultAlternative instanceof DefaultBindingAlternative def) {
+                // Build a closure that contains the returned constructor applied to its arguments.
+                List<Variable> arbitraryVariables = Variable.arbitrary(cons.arguments().size());
+                Closure boundClosure = new Closure(
+                        new LambdaForm(arbitraryVariables, false, Collections.emptyList(),
+                                new ConstructorApplication(cons.constructor(), arbitraryVariables)),
+                        cons.arguments());
+
+                continuation.savedEnvironment().put(def.variable, new Address(heap.allocate(boundClosure)));
+                code = new Code.Eval(def.expression, continuation.savedEnvironment());
+
+            } else if (continuation.alternatives().defaultAlternative instanceof DefaultFallthroughAlternative def) {
+                code = new Code.Eval(def.expression, continuation.savedEnvironment());
+            } // TODO: There COULD be another case, if the parser allows it.
         }
     }
 
