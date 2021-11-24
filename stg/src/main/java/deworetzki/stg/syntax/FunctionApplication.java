@@ -17,6 +17,10 @@ public final class FunctionApplication extends Application {
         this.function = function;
     }
 
+    public FunctionApplication(Variable function, List<? extends Atom> arguments) {
+        this(Position.NONE, function, arguments);
+    }
+
     @Override
     public <R> R accept(Visitor<R> visitor) {
         return visitor.visit(this);
