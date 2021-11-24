@@ -79,6 +79,12 @@ public class Machine {
             Map<Variable, Value> localEnvironment = allocateAll(heap, let.bindings, this.localEnvironment, let.isRecursive);
             return new Code.Eval(let.expression, localEnvironment);
         }
+
+        @Override
+        public Code visit(CaseExpression expression) {
+            returnStack.push(new Continuation(expression.alternatives, localEnvironment));
+            return new Code.Eval(expression.scrutinized, localEnvironment);
+        }
     }
 
     /**
