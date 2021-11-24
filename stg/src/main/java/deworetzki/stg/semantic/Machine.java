@@ -41,13 +41,14 @@ public class Machine {
                     closure.code().freeVariables, closure.capture(),
                     closure.code().parameter, arguments);
             code = new Code.Eval(closure.code().body, localEnvironment);
-        } else if (code instanceof Code.ReturnConstructor cons) {
+
+        } else if (code instanceof Code.ReturnConstructor ret) {
             final Continuation continuation = returnStack.pop();
 
             for (Alternative alternative : continuation.alternatives()) {
                 AlgebraicAlternative algebraicAlternative = (AlgebraicAlternative) alternative;
                 // Find matching alternative (if present) and exit early.
-                if (Constructor.areEqual(cons.constructor(), algebraicAlternative.constructor)) {
+                if (Constructor.areEqual(ret.constructor(), algebraicAlternative.constructor)) {
                     code = new Code.Eval(algebraicAlternative.expression, continuation.savedEnvironment());
                     return;
                 }
@@ -55,11 +56,11 @@ public class Machine {
 
             if (continuation.alternatives().defaultAlternative instanceof DefaultBindingAlternative def) {
                 // Build a closure that contains the returned constructor applied to its arguments.
-                List<Variable> arbitraryVariables = Variable.arbitrary(cons.arguments().size());
+                List<Variable> arbitraryVariables = Variable.arbitrary(ret.arguments().size());
                 Closure boundClosure = new Closure(
                         new LambdaForm(arbitraryVariables, false, emptyList(),
-                                new ConstructorApplication(cons.constructor(), arbitraryVariables)),
-                        cons.arguments());
+                                new ConstructorApplication(ret.constructor(), arbitraryVariables)),
+                        ret.arguments());
 
                 continuation.savedEnvironment().put(def.variable, new Address(heap.allocate(boundClosure)));
                 code = new Code.Eval(def.expression, continuation.savedEnvironment());
@@ -67,6 +68,25 @@ public class Machine {
             } else if (continuation.alternatives().defaultAlternative instanceof DefaultFallthroughAlternative def) {
                 code = new Code.Eval(def.expression, continuation.savedEnvironment());
             } // TODO: There COULD be another case, if the parser allows it.
+
+        } else if (code instanceof Code.ReturnInteger ret) {
+            final Continuation continuation = returnStack.pop();
+
+            for (Alternative alternative : continuation.alternatives()) {
+                PrimitiveAlternative primitiveAlternative = (PrimitiveAlternative) alternative;
+
+                if (ret.integer() == primitiveAlternative.literal.value) {
+                    code = new Code.Eval(primitiveAlternative.expression, continuation.savedEnvironment());
+                    return;
+                }
+            }
+
+            if (continuation.alternatives().defaultAlternative instanceof DefaultBindingAlternative def) {
+                continuation.savedEnvironment().put(def.variable, new UnboxedInt(ret.integer()));
+                code = new Code.Eval(def.expression, continuation.savedEnvironment());
+            } else if (continuation.alternatives().defaultAlternative instanceof DefaultFallthroughAlternative def) {
+                code = new Code.Eval(def.expression, continuation.savedEnvironment());
+            }
         }
     }
 
