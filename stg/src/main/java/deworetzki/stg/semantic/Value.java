@@ -6,10 +6,9 @@ import deworetzki.stg.syntax.Variable;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public interface Value {
+public sealed interface Value {
 
     /**
      * An accessor returning the underlying <code>int</code> value

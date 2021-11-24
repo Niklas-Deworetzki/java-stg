@@ -12,7 +12,7 @@ import java.util.Map;
  * The <i>code</i> component of the {@link Machine machine state} can take one of the
  * four forms defined in this file.
  */
-public interface Code {
+public sealed interface Code {
 
     /**
      * Evaluate the given {@link Expression} in the given {@link Map Environment}

@@ -16,15 +16,15 @@ import java.util.List;
 public final class LambdaForm extends Node {
     public final List<Variable> freeVariables;
     public final boolean isUpdateable;
-    public final List<Variable> arguments;
+    public final List<Variable> parameter;
     public final Expression body;
 
     public LambdaForm(Position position,
-                      List<Variable> freeVariables, boolean isUpdateable, List<Variable> arguments, Expression body) {
+                      List<Variable> freeVariables, boolean isUpdateable, List<Variable> parameter, Expression body) {
         super(position);
         this.freeVariables = freeVariables;
         this.isUpdateable = isUpdateable;
-        this.arguments = arguments;
+        this.parameter = parameter;
         this.body = body;
     }
 
@@ -38,7 +38,7 @@ public final class LambdaForm extends Node {
         return formatTree("Lambda",
                 formatMember("free", freeVariables),
                 formatMember("update", isUpdateable ? "u" : "n"),
-                formatMember("arguments", arguments),
+                formatMember("parameter", parameter),
                 formatMember("body", body.toString()));
     }
 }
