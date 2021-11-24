@@ -3,9 +3,10 @@ package deworetzki.stg.syntax;
 import deworetzki.parse.Position;
 import deworetzki.stg.visitor.Visitor;
 
+import java.util.Iterator;
 import java.util.List;
 
-public final class Alternatives extends Node {
+public final class Alternatives extends Node implements Iterable<Alternative> {
     public final List<Alternative> alternatives;
     public final DefaultAlternative defaultAlternative;
 
@@ -13,6 +14,11 @@ public final class Alternatives extends Node {
         super(position);
         this.alternatives = alternatives;
         this.defaultAlternative = defaultAlternative;
+    }
+
+    @Override
+    public Iterator<Alternative> iterator() {
+        return alternatives.iterator();
     }
 
     @Override
