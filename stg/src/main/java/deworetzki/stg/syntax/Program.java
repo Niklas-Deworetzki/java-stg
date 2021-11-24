@@ -3,12 +3,13 @@ package deworetzki.stg.syntax;
 import deworetzki.parse.Position;
 import deworetzki.stg.visitor.Visitor;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
  * A {@link Program} holds all top level {@link Bind bindings}.
  */
-public final class Program extends Node {
+public final class Program extends Node implements Iterable<Bind> {
     public final List<Bind> bindings;
 
     public Program(Position position, List<Bind> bindings) {
@@ -16,6 +17,10 @@ public final class Program extends Node {
         this.bindings = bindings;
     }
 
+    @Override
+    public Iterator<Bind> iterator() {
+        return bindings.iterator();
+    }
 
     @Override
     public <R> R accept(Visitor<R> visitor) {
