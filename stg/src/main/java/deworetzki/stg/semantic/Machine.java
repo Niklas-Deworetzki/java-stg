@@ -5,6 +5,7 @@ import deworetzki.stg.syntax.*;
 import deworetzki.stg.visitor.DefaultVisitor;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static deworetzki.stg.semantic.Value.*;
 import static deworetzki.stg.utils.CollectionUtils.*;
@@ -21,7 +22,7 @@ public class Machine {
 
 
     public Machine(Program program) {
-        this.globalEnvironment = heap.initialize(program);
+        this.globalEnvironment = allocateAll(heap, program.bindings, Collections.emptyMap(), true);
     }
 
     public void step() {
@@ -36,7 +37,7 @@ public class Machine {
             List<Value> arguments = take(closure.code().arguments.size(), argumentStack);
 
             final var localEnvironment = mkLocalEnv(
-                    closure.code().freeVariables, closure.values(),
+                    closure.code().freeVariables, closure.capture(),
                     closure.code().arguments, arguments);
             code = new Code.Eval(closure.code().body, localEnvironment);
         }
@@ -50,17 +51,6 @@ public class Machine {
             this.localEnvironment = localEnvironment;
         }
 
-        /**
-         * <pre>
-         * Eval (f xs) p as rs us h s
-         *  with
-         *      val p s f = Addr a
-         * </pre>
-         * =>
-         * <pre>
-         * Enter a ((val p s xs) ++ as) rs us h s
-         * </pre>
-         */
         @Override
         public Code visit(FunctionApplication application) {
             final var function = value(localEnvironment, globalEnvironment, application.function);
@@ -83,6 +73,64 @@ public class Machine {
 
             return null;
         }
+
+        @Override
+        public Code visit(LetBinding let) {
+            Map<Variable, Value> localEnvironment = allocateAll(heap, let.bindings, this.localEnvironment, let.isRecursive);
+            return new Code.Eval(let.expression, localEnvironment);
+        }
+    }
+
+    /**
+     * Allocate a {@link List} of {@link Bind bindings} on the {@link Heap}
+     * and in a {@link Map local environment}, that is returned from this method.
+     * <p>
+     * For every binding provided, a {@link Address heap address} is reserved,
+     * which is entered as the {@link Value} for the bindings {@link Variable}
+     * into the given {@link Map environment}.
+     * <p>
+     * After the environment has been prepared, the heap space at the reserved address
+     * for a binding is {@link Heap#update(int, Closure) updated} with a newly created
+     * {@link Closure}. This will capture the value visible value for every
+     * {@link LambdaForm#freeVariables free variable} in the closures {@link LambdaForm}.
+     * <p>
+     * Capturing the closures free variables can also happen recursively, fetching the
+     * values from the local built environment instead of the outer one.
+     *
+     * @param heap             The {@link Heap} object used to allocate a {@link Closure}
+     *                         for every given {@link LambdaForm}.
+     * @param bindings         The {@link Bind bindings} inserted into the returned
+     *                         {@link Map environment}. The {@link LambdaForm} of these
+     *                         bindings is allocated on the {@link Heap}.
+     * @param outerEnvironment The outer {@link Map environment} under which the bindings
+     *                         are present.
+     * @param isRecursive      If true, the {@link LambdaForm#freeVariables free variables}
+     *                         of the {@link LambdaForm} may be bound to the variables
+     *                         generated from the {@link Bind bindings}.
+     * @return An updated {@link Map environment}, holding the {@link Address heap address}
+     * for every {@link Bind}.
+     */
+    private static Map<Variable, Value> allocateAll(final Heap heap, final List<Bind> bindings,
+                                                    final Map<Variable, Value> outerEnvironment,
+                                                    final boolean isRecursive) {
+        // Create a local environment to mutate, including all bindings from the outer one.
+        final Map<Variable, Value> localEnvironment = new HashMap<>(outerEnvironment);
+        // Reserve an address for all values on the heap.
+        final Iterable<Integer> addresses = heap.reserveMany(bindings.size());
+        // Update the local environment using the reserved heap addresses.
+        combineWith(addresses, bindings,
+                (address, bind) -> localEnvironment.put(bind.variable, new Address(address)));
+
+        // Recursive definitions may refer to themselves.
+        final Map<Variable, Value> rhsEnvironment = (isRecursive) ? localEnvironment : outerEnvironment;
+        // Update the Closures for the reserved addresses.
+        combineWith(addresses, bindings, (address, bind) -> {
+            List<Value> capturedValues = bind.lambda.freeVariables.stream()
+                    .map(rhsEnvironment::get)
+                    .collect(Collectors.toList());
+            heap.update(address, new Closure(bind.lambda, capturedValues));
+        });
+        return localEnvironment;
     }
 
     private Map<Variable, Value> mkLocalEnv(final List<Variable> freeVariables,
