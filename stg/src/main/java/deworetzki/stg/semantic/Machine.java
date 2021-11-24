@@ -1,6 +1,5 @@
 package deworetzki.stg.semantic;
 
-import deworetzki.parse.Position;
 import deworetzki.stg.syntax.*;
 import deworetzki.stg.visitor.DefaultVisitor;
 
@@ -8,7 +7,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static deworetzki.stg.semantic.Value.*;
-import static deworetzki.stg.utils.CollectionUtils.*;
+import static deworetzki.stg.utils.CollectionUtils.combineWith;
+import static deworetzki.stg.utils.CollectionUtils.take;
+import static java.util.Collections.emptyList;
 
 public class Machine {
     public static final Expression ENTRY_POINT = new FunctionApplication(new Variable("main"), emptyList());
@@ -56,7 +57,7 @@ public class Machine {
                 // Build a closure that contains the returned constructor applied to its arguments.
                 List<Variable> arbitraryVariables = Variable.arbitrary(cons.arguments().size());
                 Closure boundClosure = new Closure(
-                        new LambdaForm(arbitraryVariables, false, Collections.emptyList(),
+                        new LambdaForm(arbitraryVariables, false, emptyList(),
                                 new ConstructorApplication(cons.constructor(), arbitraryVariables)),
                         cons.arguments());
 
