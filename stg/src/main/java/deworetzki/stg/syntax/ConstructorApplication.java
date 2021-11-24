@@ -14,7 +14,7 @@ import java.util.List;
 public final class ConstructorApplication extends Application {
     public final Constructor constructor;
 
-    public ConstructorApplication(Position position, Constructor constructor, List<Atom> arguments) {
+    public ConstructorApplication(Position position, Constructor constructor, List<? extends Atom> arguments) {
         super(position, arguments);
         this.constructor = constructor;
     }

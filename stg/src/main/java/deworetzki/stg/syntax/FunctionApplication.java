@@ -12,7 +12,7 @@ import java.util.List;
 public final class FunctionApplication extends Application {
     public final Variable function;
 
-    public FunctionApplication(Position position, Variable function, List<Atom> arguments) {
+    public FunctionApplication(Position position, Variable function, List<? extends Atom> arguments) {
         super(position, arguments);
         this.function = function;
     }

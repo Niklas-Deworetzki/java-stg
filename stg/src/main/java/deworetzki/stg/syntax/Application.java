@@ -12,9 +12,9 @@ import java.util.List;
  * a closure on the heap using a {@link LetBinding let(rec) expression}.
  */
 public abstract class Application extends Expression {
-    public final List<Atom> arguments;
+    public final List<? extends Atom> arguments;
 
-    public Application(Position position, List<Atom> arguments) {
+    public Application(Position position, List<? extends Atom> arguments) {
         super(position);
         this.arguments = arguments;
     }

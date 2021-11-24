@@ -50,7 +50,7 @@ public sealed interface Value {
 
     static List<Value> values(Map<Variable, Value> localEnvironment,
                                  Map<Variable, Value> globalEnvironment,
-                                 List<Atom> atoms) {
+                                 List<? extends Atom> atoms) {
         return atoms.stream()
                 .map(atom -> value(localEnvironment, globalEnvironment, atom))
                 .collect(Collectors.toList());
