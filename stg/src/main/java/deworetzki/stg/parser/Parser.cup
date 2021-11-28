@@ -1,0 +1,31 @@
+package deworetzik.stg.parse;
+
+import deworetzki.parse.Position;
+import java_cup.runtime.*;
+import java.util.*;
+
+import deworetzki.stg.syntax.*;
+import deworetzki.parse.symbol.*;
+
+parser code {:
+/**
+ * Creates a new {@link Position} object from given left and right values.
+ */
+public Position position(int left, int right) {
+    return new Position(
+            ((deworetzki.stg.parser.Scanner) getScanner()).source,
+            left, right);
+}
+:}
+
+terminal LPAR, RPAR;
+terminal INDENT, UNINDENT;
+
+terminal CASE, DEFAULT, LET, IN;
+terminal TYPE, VARIABLE;
+
+non terminal Epsilon;
+
+start with Epsilon;
+
+Epsilon ::=  ; // Empty symbol

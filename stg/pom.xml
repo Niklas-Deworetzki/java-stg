@@ -25,4 +25,51 @@
             <version>2.4.0</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>de.jflex</groupId>
+                <artifactId>jflex-maven-plugin</artifactId>
+                <version>1.7.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <lexDefinitions>
+                        <definition>
+                            ${project.basedir}/src/main/java/deworetzki/stg/parser/Scanner.jflex
+                        </definition>
+                    </lexDefinitions>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.github.vbmacher</groupId>
+                <artifactId>cup-maven-plugin</artifactId>
+                <version>11b-20160615</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <cupDefinition>
+                        ${project.basedir}/src/main/java/deworetzki/stg/parser/Parser.cup
+                    </cupDefinition>
+                    <className>Parser</className>
+                    <symbolsName>Sym</symbolsName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
