@@ -3,6 +3,7 @@ package deworetzki.stg.parser;
 import java_cup.runtime.*;
 import deworetzki.parse.*;
 import deworetzki.parse.symbol.*;
+import deworetzki.messages.*;
 
 import static deworetzik.stg.parse.Sym.*;
 
@@ -65,6 +66,5 @@ LineComment = "#" {InputCharacter}*
 
 [^]     { // This rule matches any previously unmatched characters.
           char offendingChar = yytext().charAt(0);
-          throw new RuntimeException("Illegal symbol " + offendingChar);
-          //throw new CompileError.IllegalCharacter(offendingChar, currentPosition());
+          throw new ErrorMessage.IllegalInputCharacter(offendingChar, currentPosition());
         }
