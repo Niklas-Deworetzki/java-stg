@@ -17,6 +17,14 @@
 
 
 
+
+
+
+
+
+
+
+
 ## What can Haskell do?
 
 
@@ -259,4 +267,5 @@ class Example {
 
 * **Spineless** – Die *Spine* beschreibt die Datenstruktur, welche einzelne Knoten hält (Bsp. verkettete Liste). Es existiert keine explizite Datenstruktur des Graphen im Speicher.
 * **Tagless** – Tags werden verwendet, um Werte mit einem Label zu markieren. Ausgewertet/Nicht ausgewertet oder welcher Konstruktor vorliegt.
-* **Graph-Reduction** – Programm ist ein Graph. Reduktion des Graphen entspricht der Auswertung des Programms.
+* ###### **Graph-Reduction** – Programm ist ein Graph. Reduktion des Graphen entspricht der Auswertung des Programms.
+

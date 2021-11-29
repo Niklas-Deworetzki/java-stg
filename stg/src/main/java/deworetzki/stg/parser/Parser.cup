@@ -16,16 +16,63 @@ public Position position(int left, int right) {
             ((deworetzki.stg.parser.Scanner) getScanner()).source,
             left, right);
 }
+
+private static <T> List<T> nil() {
+    return new LinkedList<>();
+}
+
+private static <T> List<T> cons(T head, List<T> tail) {
+    tail.add(0, head);
+    return tail;
+}
 :}
 
-terminal LPAR, RPAR;
 terminal INDENT, UNINDENT, TERMINATOR;
+terminal LBRA, RBRA;
 
-terminal CASE, DEFAULT, LET, IN;
-terminal TYPE, VARIABLE;
+terminal LET, LETREC, IN;
+terminal CASE, OF, DEFAULT, UNDERSCORE;
+terminal EQ, LAMBDA, SINGLEARROW, DOUBLEARROW;
+terminal VARIABLE, TYPE, PRIMITIVE;
+
+terminal Integer INTLIT;
+
+non terminal List<Bind> Program;
+non terminal Bind Bind;
+non terminal LambdaForm LambdaForm;
+
+non terminal Variable Variable;
+non terminal Expression Expression, CaseExpression, LetExpression, Literal;
+non terminal Application FunctionApplication, ConstructorApplication, BuiltinApplication;
+non terminal Alternatives PrimitiveAlternatives, AlgebraicAlternatives;
+non terminal Alternative PrimitiveAlternative, AlgebraicAlternative, DefaultAlternative;
+non terminal DefaultAlternative DefaultBindingAlternative, DefaultFallthroughAlternative;
+
+non terminal Atom Atom;
+
+non terminal List<Atom> Atoms;
+non terminal List<Bind> Bindings, NonEmptyBindings;
+non terminal List<Variable> Variables;
 
 non terminal Epsilon;
 
 start with Epsilon;
 
 Epsilon ::=  ; // Empty symbol
+
+Program ::= Bindings
+          ;
+
+Bindings ::= NonEmptyBindings
+           | Epsilon
+           ;
+NonEmptyBindings ::= Bind TERMINATOR NonEmptyBindings
+                   | Bind TERMINATOR INDENT NonEmptyBindings
+                   | Bind
+                   ;
+
+Bind ::= Variable EQ LambdaForm
+       ;
+
+
+
