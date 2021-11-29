@@ -19,7 +19,7 @@ public Position position(int left, int right) {
 :}
 
 terminal LPAR, RPAR;
-terminal INDENT, UNINDENT;
+terminal INDENT, UNINDENT, TERMINATOR;
 
 terminal CASE, DEFAULT, LET, IN;
 terminal TYPE, VARIABLE;
