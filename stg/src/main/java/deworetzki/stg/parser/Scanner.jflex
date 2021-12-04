@@ -61,7 +61,7 @@ TypeName      = [A-Z] {ArbitraryCharacter}*
 PrimitiveName = {VariableName} "#"
 
 BoxedInteger     = 0|[1-9][0-9]*
-PrimitiveInteger = {PrimitiveInteger} "#"
+PrimitiveInteger = {BoxedInteger} "#"
 
 %%
 
@@ -83,7 +83,6 @@ PrimitiveInteger = {PrimitiveInteger} "#"
 "case"    { return symbol(CASE); }
 "of"      { return symbol(OF); }
 "default" { return symbol(DEFAULT); }
-"_"       { return symbol(UNDERSCORE); }
 
 "="      { return symbol(EQ); }
 "\\"     { return symbol(LAMBDA); }

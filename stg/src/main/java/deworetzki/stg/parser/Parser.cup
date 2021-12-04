@@ -31,7 +31,7 @@ terminal INDENT, UNINDENT, TERMINATOR;
 terminal LBRA, RBRA;
 
 terminal LET, LETREC, IN;
-terminal CASE, OF, DEFAULT, UNDERSCORE;
+terminal CASE, OF, DEFAULT;
 terminal EQ, LAMBDA, SINGLEARROW, DOUBLEARROW;
 terminal VARIABLE, TYPE, PRIMITIVE;
 
@@ -41,38 +41,211 @@ non terminal List<Bind> Program;
 non terminal Bind Bind;
 non terminal LambdaForm LambdaForm;
 
-non terminal Variable Variable;
-non terminal Expression Expression, CaseExpression, LetExpression, Literal;
-non terminal Application FunctionApplication, ConstructorApplication, BuiltinApplication;
-non terminal Alternatives PrimitiveAlternatives, AlgebraicAlternatives;
-non terminal Alternative PrimitiveAlternative, AlgebraicAlternative, DefaultAlternative;
-non terminal DefaultAlternative DefaultBindingAlternative, DefaultFallthroughAlternative;
+non terminal Expression Expression, CaseExpression, LetExpression;
+non terminal Application Application;
+
+non terminal Alternatives Alternatives;
+non terminal List<Alternative> PrimitiveAlternatives, AlgebraicAlternatives;
+non terminal Alternative PrimitiveAlternative, AlgebraicAlternative;
+non terminal DefaultAlternative DefaultAlternative, DefaultBindingAlternative, DefaultFallthroughAlternative;
 
 non terminal Atom Atom;
+non terminal Variable Variable;
+non terminal Constructor Constructor;
+non terminal Literal Literal;
 
 non terminal List<Atom> Atoms;
 non terminal List<Bind> Bindings, NonEmptyBindings;
 non terminal List<Variable> Variables;
 
+non terminal Boolean AnyLet, LambdaArrow;
 non terminal Epsilon;
+non terminal Arrow;
 
-start with Epsilon;
+start with Program;
+
+
+
+// TODO: Warn if double?
+Arrow ::= SINGLEARROW | DOUBLEARROW
+        ;
+
+LambdaArrow ::= DOUBLEARROW
+                                                {: RESULT = false; :}
+              | SINGLEARROW
+                                                {: RESULT = true; :}
+              ;
+
+AnyLet ::= LET
+                                                {: RESULT = false; :}
+         | LETREC
+                                                {: RESULT = true; :}
+         ;
 
 Epsilon ::=  ; // Empty symbol
 
-Program ::= Bindings
+
+
+Program ::= Bindings:bindings
+                                                {: RESULT = new Program(position(bindingsleft, bindingsright), bindings); :}
           ;
 
-Bindings ::= NonEmptyBindings
-           | Epsilon
-           ;
-NonEmptyBindings ::= Bind TERMINATOR NonEmptyBindings
-                   | Bind TERMINATOR INDENT NonEmptyBindings
-                   | Bind
-                   ;
-
-Bind ::= Variable EQ LambdaForm
+Bind ::= Variable:var EQ:anchor LambdaForm:lambda
+                                                {: RESULT = new Bind(position(anchorleft, anchorright),
+                                                    var, lambda); :}
        ;
 
+Bindings ::= NonEmptyBindings:bindings
+                                                {: RESULT = bindings; :}
+           | Epsilon
+                                                {: RESULT = nil(); :}
+           ;
 
+NonEmptyBindings ::= Bind:head TERMINATOR NonEmptyBindings:tail
+                                                {: RESULT = cons(head, tail); :}
+                   | Bind:head
+                                                {: RESULT = cons(head, nil()); :}
+                   ;
+
+//
+//
+//
+
+LambdaForm ::= LAMBDA:anchor Variables:args LambdaArrow:arrow LBRA Variables:free RBRA Expression:expr
+                                                {: RESULT = new LambdaForm(position(anchorleft, anchorright), free,
+                                                    arrow, args, expr); :}
+             | LAMBDA:anchor Variables:args LambdaArrow:arrow Expression:expr
+                                                {: RESULT = new LambdaForm(position(anchorleft, anchorright), null,
+                                                    arrow, args, expr); :}
+             ;
+
+//
+//
+//
+
+Expression ::= CaseExpression:expr
+                                                {: RESULT = expr; :}
+             | LetExpression:expr
+                                                {: RESULT = expr; :}
+             | Application:expr
+                                                {: RESULT = expr; :}
+             ;
+
+LetExpression ::= AnyLet:let Bindings:binds IN Expression:expr
+                                                {: RESULT = new LetExpression(position(letleft, letright), let
+                                                    binds, expr); :}
+                | AnyLet:let TERMINATOR Bindings:binds IN Expression:expr
+                                                {: RESULT = new LetExpression(position(letleft, letright), let
+                                                    binds, expr); :}
+                | AnyLet:let Bind:head TERMINATOR INDENT Bindings:binds UNINDENT IN Expression:expr
+                                                {: RESULT = new LetExpression(position(letleft, letright), let
+                                                    cons(head, binds), expr); :}
+                ;
+
+CaseExpression ::= CASE:anchor Expression:expr OF TERMINATOR INDENT Alternatives:alternatives UNINDENT
+                                                {: RESULT = new CaseExpression(position(anchorleft, anchorright),
+                                                    expression, alternatives); :}
+                 ;
+
+//
+//
+//
+
+Application ::= Variable:function Atoms:args
+                                                {: RESULT = new FunctionApplication(position(functionleft, functionright),
+                                                    function, args); :}
+              | Constructor:constr Atoms:args
+                                                {: RESULT = new ConstructorApplication(position(constrleft, constrright),
+                                                    constr, args); :}
+              | PRIMITIVE:op Atoms:args
+                                                {: RESULT = new PrimitiveApplication(position(opleft, opright),
+                                                    op, args); :}
+              ;
+
+//
+//
+//
+
+Alternatives ::= AlgebraicAlternative:head TERMINATOR AlgebraicAlternatives:tail DefaultAlternative:def
+                                                {: RESULT = new Alternatives(
+                                                    position(headleft, headright), cons(head, tail), def); :}
+               | PrimitiveAlternative:head TERMINATOR PrimitiveAlternatives:tail DefaultAlternative:def
+                                                {: RESULT = new Alternatives(
+                                                    position(headleft, headright), cons(head, tail), def); :}
+               | DefaultAlternative:def
+                                                {: RESULT = new Alternatives(position(defleft, defright), nil(), def); :}
+               ;
+
+AlgebraicAlternatives ::= AlgebraicAlternative:head TERMINATOR AlgebraicAlternatives:tail
+                                                {: RESULT = cons(head, tail); :}
+                        | Epsilon
+                                                {: RESULT = nil(); :}
+                        ;
+
+
+AlgebraicAlternative ::= Constructor:constr Arrow Expression:expr
+                                                {: RESULT = new AlgebraicAlternative(
+                                                    position(constrleft, constrright), constr, expr); :}
+                       ;
+
+PrimitiveAlternatives ::= PrimitiveAlternative:head TERMINATOR PrimitiveAlternatives:tail
+                                                {: RESULT = cons(head, tail); :}
+                        | Epsilon
+                                                {: RESULT = nil(); :}
+                        ;
+
+PrimitiveAlternative ::= Literal:literal Arrow Expression:expr
+                                                {: RESULT = new PrimitiveAlternative(
+                                                    position(literalleft, literalright), literal, expr); :}
+                       ;
+
+DefaultAlternative ::= DefaultFallthroughAlternative:alternative
+                                                {: RESULT = alternative; :}
+                     | DefaultBindingAlternative:alternative
+                                                {: RESULT = alternative; :}
+                     ;
+
+DefaultFallthroughAlternative ::= DEFAULT:achor Arrow Expression:expr
+                                                {: RESULT = new DefaultFallthroughAlternative(
+                                                        position(achorleft, achorright), expr); :}
+                                ;
+
+DefaultBindingAlternative ::= Variable:binder Arrow Expression:expr
+                                                {: RESULT = new DefaultBindingAlternative(
+                                                        position(binderleft, binderright), binder, expr); :}
+                            ;
+
+//
+//
+//
+
+Variables ::= Variable:head Variables:tail
+                                                {: RESULT = cons(head, tail); :}
+            | Epsilon
+                                                {: RESULT = nil(); :}
+            ;
+
+Atoms ::= Atom:head Atoms:tail
+                                                {: RESULT = cons(head, tail); :}
+        | Epsilon
+                                                {: RESULT = nil(); :}
+        ;
+
+Atom ::= Variable:variable
+                                                {: RESULT = variable; :}
+       | Literal:literal
+                                                {: RESULT = literal; :}
+       ;
+
+Variable ::= VARIABLE:variable
+                                                {: RESULT = new Variable(position(variableleft, variableright), variable); :}
+           ;
+
+Constructor ::= TYPE:type
+                                                {: RESULT = new Constructor(position(typeleft, typeright), type); :}
+              ;
+
+Literal ::= INTLIT:literal
+                                                {: RESULT = new Literal(position(literalleft,literalright), literal); :}
+          ;
 
