@@ -97,5 +97,5 @@ PrimitiveInteger = {BoxedInteger} "#"
 
 [^]     { // This rule matches any previously unmatched characters.
           char offendingChar = yytext().charAt(0);
-          throw new ErrorMessage.IllegalInputCharacter(offendingChar, currentPosition());
+          throw new ErrorMessage.IllegalInputCharacter(currentPosition(), offendingChar);
         }
