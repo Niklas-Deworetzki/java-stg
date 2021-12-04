@@ -67,7 +67,7 @@ public class Machine {
 
             } else if (continuation.alternatives().defaultAlternative instanceof DefaultFallthroughAlternative def) {
                 code = new Code.Eval(def.expression, continuation.savedEnvironment());
-            } // TODO: There COULD be another case, if the parser allows it.
+            } // TODO: NoAlternative. Error state
 
         } else if (code instanceof Code.ReturnInteger ret) {
             final Continuation continuation = returnStack.pop();
@@ -86,7 +86,7 @@ public class Machine {
                 code = new Code.Eval(def.expression, continuation.savedEnvironment());
             } else if (continuation.alternatives().defaultAlternative instanceof DefaultFallthroughAlternative def) {
                 code = new Code.Eval(def.expression, continuation.savedEnvironment());
-            }
+            }  // TODO: NoAlternative. Error state
         }
     }
 

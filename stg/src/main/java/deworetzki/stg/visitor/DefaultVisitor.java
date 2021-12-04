@@ -56,6 +56,11 @@ public class DefaultVisitor<R> implements Visitor<R> {
     }
 
     @Override
+    public R visit(DefaultBindingAlternative alternative) {
+        return defaultFunction.apply(alternative);
+    }
+
+    @Override
     public R visit(DefaultFallthroughAlternative alternative) {
         return defaultFunction.apply(alternative);
     }
@@ -81,8 +86,8 @@ public class DefaultVisitor<R> implements Visitor<R> {
     }
 
     @Override
-    public R visit(DefaultBindingAlternative alternative) {
-        return defaultFunction.apply(alternative);
+    public R visit(NoAlternative noAlternative) {
+        return defaultFunction.apply(noAlternative);
     }
 
     @Override
