@@ -27,7 +27,7 @@ private static <T> List<T> cons(T head, List<T> tail) {
 }
 :}
 
-terminal INDENT, UNINDENT, TERMINATOR;
+terminal TERMINATOR;
 terminal LBRA, RBRA;
 
 terminal LET, LETREC, IN;
@@ -134,19 +134,11 @@ Expression ::= CaseExpression:expr
              ;
 
 LetBinding ::= AnyLet:let Bindings:binds IN Expression:expr
-                                                {: RESULT = new LetBinding(position(letleft, letright), let,
-                                                    binds, expr); :}
-                | AnyLet:let TERMINATOR Bindings:binds IN Expression:expr
-                                                {: RESULT = new LetBinding(position(letleft, letright), let,
-                                                    binds, expr); :}
-                | AnyLet:let Bind:head TERMINATOR INDENT Bindings:binds UNINDENT IN Expression:expr
-                                                {: RESULT = new LetBinding(position(letleft, letright), let,
-                                                    cons(head, binds), expr); :}
+                                                {: RESULT = new LetBinding(position(letleft, letright), let, binds, expr); :}
                 ;
 
-CaseExpression ::= CASE:anchor Expression:expr OF TERMINATOR INDENT Alternatives:alternatives UNINDENT
-                                                {: RESULT = new CaseExpression(position(anchorleft, anchorright),
-                                                    expr, alternatives); :}
+CaseExpression ::= CASE:anchor Expression:expr OF LBRA Alternatives:alternatives RBRA
+                                                {: RESULT = new CaseExpression(position(anchorleft, anchorright), expr, alternatives); :}
                  ;
 
 //
