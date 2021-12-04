@@ -65,9 +65,6 @@ PrimitiveInteger = {BoxedInteger} "#"
 {LineTerminator} {Indentation}* $    { /* Ignore empty lines */ }
 {WhiteSpace}+                        { /* Ignore whitespace */  }
 
-{LineTerminator}                     { return symbol(TERMINATOR); }
-;   { return symbol(TERMINATOR); }
-
 "{"      { return symbol(LBRA); }
 "}"      { return symbol(RBRA); }
 

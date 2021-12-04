@@ -27,7 +27,6 @@ private static <T> List<T> cons(T head, List<T> tail) {
 }
 :}
 
-terminal TERMINATOR;
 terminal LBRA, RBRA;
 
 terminal LET, LETREC, IN;
@@ -100,7 +99,7 @@ Bindings ::= NonEmptyBindings:bindings
                                                 {: RESULT = nil(); :}
            ;
 
-NonEmptyBindings ::= Bind:head TERMINATOR NonEmptyBindings:tail
+NonEmptyBindings ::= Bind:head NonEmptyBindings:tail
                                                 {: RESULT = cons(head, tail); :}
                    | Bind:head
                                                 {: RESULT = cons(head, nil()); :}
