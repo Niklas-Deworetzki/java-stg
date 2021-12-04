@@ -184,17 +184,16 @@ AlgebraicAlternatives ::= AlgebraicAlternative:head TERMINATOR AlgebraicAlternat
                                                 {: RESULT = nil(); :}
                         ;
 
-
-AlgebraicAlternative ::= Constructor:constr Arrow Expression:expr
-                                                {: RESULT = new AlgebraicAlternative(
-                                                    position(constrleft, constrright), constr, expr); :}
-                       ;
-
 PrimitiveAlternatives ::= PrimitiveAlternative:head TERMINATOR PrimitiveAlternatives:tail
                                                 {: RESULT = cons(head, tail); :}
                         | Epsilon
                                                 {: RESULT = nil(); :}
                         ;
+
+AlgebraicAlternative ::= Constructor:constr Atoms:args Arrow Expression:expr
+                                                {: RESULT = new AlgebraicAlternative(
+                                                    position(constrleft, constrright), constr, args, expr); :}
+                       ;
 
 PrimitiveAlternative ::= Literal:literal Arrow Expression:expr
                                                 {: RESULT = new PrimitiveAlternative(
