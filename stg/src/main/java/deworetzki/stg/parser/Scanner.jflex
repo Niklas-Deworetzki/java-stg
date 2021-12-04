@@ -10,7 +10,6 @@ import static deworetzik.stg.parse.Sym.*;
 %%
 
 %class Scanner
-%abstract
 %public
 %implements PositionedLexer
 
@@ -44,8 +43,6 @@ import static deworetzik.stg.parse.Sym.*;
         // Return the current position, counting lines and columns beginning from 1.
         return new Position(source, yyline + 1, yycolumn + 1);
     }
-
-    protected abstract void handleIndentation(String indentation);
 %}
 
 LineTerminator = \r|\n|\r\n
@@ -68,10 +65,7 @@ PrimitiveInteger = {BoxedInteger} "#"
 {LineTerminator} {Indentation}* $    { /* Ignore empty lines */ }
 {WhiteSpace}+                        { /* Ignore whitespace */  }
 
-{LineTerminator} {Indentation}*      { handleIndentation(yytext());
-                                       return symbol(TERMINATOR);
-                                     }
-
+{LineTerminator}                     { return symbol(TERMINATOR); }
 ;   { return symbol(TERMINATOR); }
 
 "{"      { return symbol(LBRA); }
