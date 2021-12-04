@@ -111,7 +111,7 @@ NonEmptyBindings ::= Bind:head TERMINATOR NonEmptyBindings:tail
 //
 //
 
-LambdaForm ::= LAMBDA:anchor Variables:args LambdaArrow:arrow LBRA Variables:free RBRA Expression:expr
+LambdaForm ::= LAMBDA:anchor LBRA Variables:free RBRA Variables:args LambdaArrow:arrow Expression:expr
                                                 {: RESULT = new LambdaForm(position(anchorleft, anchorright), free,
                                                     arrow, args, expr); :}
              | LAMBDA:anchor Variables:args LambdaArrow:arrow Expression:expr
