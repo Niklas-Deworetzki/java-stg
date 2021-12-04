@@ -45,9 +45,7 @@ import static deworetzik.stg.parse.Sym.*;
     }
 %}
 
-LineTerminator = \r|\n|\r\n
-WhiteSpace     = {LineTerminator} | [ \t\f]
-Indentation    = {WhiteSpace}
+WhiteSpace     = \s+
 
 Comment     = {LineComment}
 LineComment = "//".*
@@ -62,8 +60,8 @@ PrimitiveInteger = {BoxedInteger} "#"
 
 %%
 
-{LineTerminator} {Indentation}* $    { /* Ignore empty lines */ }
-{WhiteSpace}+                        { /* Ignore whitespace */  }
+{WhiteSpace}                         { /* Ignore whitespace */  }
+{Comment}                            { /* Ignore comments */ }
 
 "{"      { return symbol(LBRA); }
 "}"      { return symbol(RBRA); }
@@ -81,9 +79,9 @@ PrimitiveInteger = {BoxedInteger} "#"
 "=>"     { return symbol(DOUBLEARROW); }
 
 ^ {VariableName} { return symbol(TOPLEVELNAME, yytext()); }
-{VariableName}  { return symbol(VARIABLE, yytext()); }
-{TypeName}      { return symbol(TYPE, yytext()); }
-{PrimitiveName} { return symbol(PRIMITIVE, yytext()); }
+{VariableName}   { return symbol(VARIABLE, yytext()); }
+{TypeName}       { return symbol(TYPE, yytext()); }
+{PrimitiveName}  { return symbol(PRIMITIVE, yytext()); }
 
 {PrimitiveInteger} { return symbol(INTLIT, Integer.parseInt(yytext().substring(0, yytext().length() - 1))); }
 
