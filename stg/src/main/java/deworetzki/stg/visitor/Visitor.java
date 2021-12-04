@@ -28,6 +28,8 @@ public interface Visitor<R> extends Consumer<Node>, Function<Node, R> {
 
     R visit(ConstructorApplication application);
 
+    R visit(DefaultBindingAlternative alternative);
+
     R visit(DefaultFallthroughAlternative alternative);
 
     R visit(FunctionApplication application);
@@ -38,7 +40,7 @@ public interface Visitor<R> extends Consumer<Node>, Function<Node, R> {
 
     R visit(Literal literal);
 
-    R visit(DefaultBindingAlternative alternative);
+    R visit(NoAlternative noAlternative);
 
     R visit(PrimitiveAlternative alternative);
 

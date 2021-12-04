@@ -47,7 +47,7 @@ non terminal Application Application;
 non terminal Alternatives Alternatives;
 non terminal List<Alternative> PrimitiveAlternatives, AlgebraicAlternatives;
 non terminal Alternative PrimitiveAlternative, AlgebraicAlternative;
-non terminal DefaultAlternative DefaultAlternative, DefaultBindingAlternative, DefaultFallthroughAlternative;
+non terminal DefaultAlternative DefaultAlternative;
 
 non terminal Atom Atom;
 non terminal Variable Variable;
@@ -192,21 +192,15 @@ PrimitiveAlternative ::= Literal:literal Arrow Expression:expr
                                                     position(literalleft, literalright), literal, expr); :}
                        ;
 
-DefaultAlternative ::= DefaultFallthroughAlternative:alternative
-                                                {: RESULT = alternative; :}
-                     | DefaultBindingAlternative:alternative
-                                                {: RESULT = alternative; :}
+DefaultAlternative ::= DEFAULT:anchor Arrow Expression:expr
+                                                                       {: RESULT = new DefaultFallthroughAlternative(
+                                                                               position(anchorleft, anchorright), expr); :}
+                     | Variable:binder Arrow Expression:expr
+                                                                       {: RESULT = new DefaultBindingAlternative(
+                                                                               position(binderleft, binderright), binder, expr); :}
+                     | Epsilon:anchor
+                                                                       {: RESULT = new NoAlternative(position(anchorleft, anchorright)); :}
                      ;
-
-DefaultFallthroughAlternative ::= DEFAULT:achor Arrow Expression:expr
-                                                {: RESULT = new DefaultFallthroughAlternative(
-                                                        position(achorleft, achorright), expr); :}
-                                ;
-
-DefaultBindingAlternative ::= Variable:binder Arrow Expression:expr
-                                                {: RESULT = new DefaultBindingAlternative(
-                                                        position(binderleft, binderright), binder, expr); :}
-                            ;
 
 //
 //
