@@ -37,7 +37,7 @@ terminal String VARIABLE, TYPE, PRIMITIVE;
 
 terminal Integer INTLIT;
 
-non terminal List<Bind> Program;
+non terminal Program Program;
 non terminal Bind Bind;
 non terminal LambdaForm LambdaForm;
 
