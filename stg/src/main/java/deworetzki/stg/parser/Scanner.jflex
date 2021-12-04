@@ -80,6 +80,7 @@ PrimitiveInteger = {BoxedInteger} "#"
 "->"     { return symbol(SINGLEARROW); }
 "=>"     { return symbol(DOUBLEARROW); }
 
+^ {VariableName} { return symbol(TOPLEVELNAME, yytext()); }
 {VariableName}  { return symbol(VARIABLE, yytext()); }
 {TypeName}      { return symbol(TYPE, yytext()); }
 {PrimitiveName} { return symbol(PRIMITIVE, yytext()); }

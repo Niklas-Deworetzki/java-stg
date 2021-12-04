@@ -32,7 +32,7 @@ terminal LBRA, RBRA;
 terminal LET, LETREC, IN;
 terminal MATCH, CASE, DEFAULT;
 terminal EQ, LAMBDA, SINGLEARROW, DOUBLEARROW;
-terminal String VARIABLE, TYPE, PRIMITIVE;
+terminal String TOPLEVELNAME, VARIABLE, TYPE, PRIMITIVE;
 
 terminal Integer INTLIT;
 
@@ -89,8 +89,8 @@ Program ::= Bindings:bindings
                                                 {: RESULT = new Program(position(bindingsleft, bindingsright), bindings); :}
           ;
 
-Bind ::= Variable:var EQ:anchor LambdaForm:lambda
-                                                {: RESULT = new Bind(position(anchorleft, anchorright), var, lambda); :}
+Bind ::= TOPLEVELNAME:var EQ:anchor LambdaForm:lambda
+                                                {: RESULT = new Bind(position(anchorleft, anchorright), new Variable(position(varleft, varright), var), lambda); :}
        ;
 
 Bindings ::= NonEmptyBindings:bindings
