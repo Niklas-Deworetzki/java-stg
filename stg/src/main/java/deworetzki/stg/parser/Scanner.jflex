@@ -93,7 +93,7 @@ PrimitiveInteger = {BoxedInteger} "#"
 {TypeName}      { return symbol(TYPE, yytext()); }
 {PrimitiveName} { return symbol(PRIMITIVE, yytext()); }
 
-{PrimitiveInteger} { return symbol(INTLIT, Integer.parseInt(yytext().substring(0, yytext().length() - 1)); }
+{PrimitiveInteger} { return symbol(INTLIT, Integer.parseInt(yytext().substring(0, yytext().length() - 1))); }
 
 [^]     { // This rule matches any previously unmatched characters.
           char offendingChar = yytext().charAt(0);
