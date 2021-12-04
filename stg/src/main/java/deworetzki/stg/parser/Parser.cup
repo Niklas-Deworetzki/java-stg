@@ -45,8 +45,8 @@ non terminal Expression Expression, CaseExpression, LetBinding;
 non terminal Application Application;
 
 non terminal Alternatives Alternatives;
-non terminal List<Alternative> PrimitiveAlternatives, AlgebraicAlternatives;
-non terminal Alternative PrimitiveAlternative, AlgebraicAlternative;
+non terminal List<Alternative> NonDefaultAlternatives;
+non terminal Alternative Alternative;
 non terminal DefaultAlternative DefaultAlternative;
 
 non terminal Atom Atom;
@@ -154,42 +154,27 @@ Application ::= Variable:function Atoms:args
 //
 //
 
-Alternatives ::= AlgebraicAlternatives:alts DefaultAlternative:def
-                                                {: RESULT = new Alternatives(
-                                                    position(headleft, headright), alts, def); :}
-               | PrimitiveAlternatives:alts DefaultAlternative:def
-                                                {: RESULT = new Alternatives(
-                                                    position(headleft, headright), alts, def); :}
-               | DefaultAlternative:def
-                                                {: RESULT = new Alternatives(position(defleft, defright), nil(), def); :}
+Alternatives ::= NonDefaultAlternatives:alts DefaultAlternative:def
+                                                {: RESULT = new Alternatives(position(altsleft, altsright), alts, def); :}
                ;
 
-AlgebraicAlternatives ::= AlgebraicAlternative:head TERMINATOR AlgebraicAlternatives:tail
+NonDefaultAlternatives ::= CASE:anchor Alternative:head NonDefaultAlternatives:tail
                                                 {: RESULT = cons(head, tail); :}
-                        | AlgebraicAlternative:head
-                                                {: RESULT = cons(head, nil()); :}
-                        ;
+                         | Epsilon
+                                                {: RESULT = nil(); :}
+                         ;
 
-PrimitiveAlternatives ::= PrimitiveAlternative:head TERMINATOR PrimitiveAlternatives:tail
-                                                {: RESULT = cons(head, tail); :}
-                        | PrimitiveAlternative:head
-                                                {: RESULT = cons(head, nil()); :}
-                        ;
-
-AlgebraicAlternative ::= CASE:anchor Constructor:constr Atoms:args Arrow Expression:expr
-                                                {: RESULT = new AlgebraicAlternative(position(anchorleft, anchorright), constr, args, expr); :}
-                       ;
-
-PrimitiveAlternative ::= CASE:anchor Literal:literal Arrow Expression:expr
-                                                {: RESULT = new PrimitiveAlternative(position(anchorleft, anchorright), literal, expr); :}
-                       ;
-
-DefaultAlternative ::= CASE:anchor DEFAULT Arrow Expression:expr
-                                                                       {: RESULT = new DefaultFallthroughAlternative(position(anchorleft, anchorright), expr); :}
-                     | CASE:anchor Variable:binder Arrow Expression:expr
-                                                                       {: RESULT = new DefaultBindingAlternative(position(anchorleft, anchorright), binder, expr); :}
+Alternative ::= Constructor:constr Atoms:args Arrow Expression:expr
+                                                {: RESULT = new AlgebraicAlternative(position(constrleft, constrright), constr, args, expr); :}
+              | Literal:literal Arrow Expression:expr
+                                                {: RESULT = new PrimitiveAlternative(position(literalleft, literalright), literal, expr); :}
+              ;
+DefaultAlternative ::= DEFAULT:anchor Arrow Expression:expr
+                                                {: RESULT = new DefaultFallthroughAlternative(position(anchorleft, anchorright), expr); :}
+                     | DEFAULT:anchor Variable:binder Arrow Expression:expr
+                                                {: RESULT = new DefaultBindingAlternative(position(anchorleft, anchorright), binder, expr); :}
                      | Epsilon:anchor
-                                                                       {: RESULT = new NoAlternative(position(anchorleft, anchorright)); :}
+                                                {: RESULT = new NoAlternative(position(anchorleft, anchorright)); :}
                      ;
 
 //
