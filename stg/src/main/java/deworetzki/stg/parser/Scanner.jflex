@@ -79,7 +79,7 @@ PrimitiveInteger = {BoxedInteger} "#"
 
 "let"     { return symbol(LET); }
 "letrec"  { return symbol(LETREC); }
-"in"      { retrun symbol(IN); }
+"in"      { return symbol(IN); }
 "case"    { return symbol(CASE); }
 "of"      { return symbol(OF); }
 "default" { return symbol(DEFAULT); }
