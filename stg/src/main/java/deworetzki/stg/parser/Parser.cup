@@ -129,6 +129,8 @@ Expression ::= CaseExpression:expr
                                                 {: RESULT = expr; :}
              | Application:expr
                                                 {: RESULT = expr; :}
+             | Literal:literal
+                                                {: RESULT = literal; :}
              ;
 
 LetBinding ::= AnyLet:let Bindings:binds IN Expression:expr
