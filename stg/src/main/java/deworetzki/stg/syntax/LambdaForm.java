@@ -14,7 +14,7 @@ import java.util.List;
  * must be provided as well.
  */
 public final class LambdaForm extends Node {
-    public List<Variable> freeVariables;
+    public List<Variable> freeVariables; // TODO: Populate or check
     public final boolean isUpdateable;
     public final List<Variable> parameter;
     public final Expression body;

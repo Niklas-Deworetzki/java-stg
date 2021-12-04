@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public final class Alternatives extends Node implements Iterable<Alternative> {
-    public final List<Alternative> alternatives;
+    public final List<Alternative> alternatives; // TODO: Enforce homogeneity
     public final DefaultAlternative defaultAlternative;
 
     public Alternatives(Position position, List<Alternative> alternatives, DefaultAlternative defaultAlternative) {
