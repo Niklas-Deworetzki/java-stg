@@ -31,7 +31,7 @@ terminal TERMINATOR;
 terminal LBRA, RBRA;
 
 terminal LET, LETREC, IN;
-terminal CASE, OF, DEFAULT;
+terminal MATCH, CASE, DEFAULT;
 terminal EQ, LAMBDA, SINGLEARROW, DOUBLEARROW;
 terminal String VARIABLE, TYPE, PRIMITIVE;
 
@@ -91,8 +91,7 @@ Program ::= Bindings:bindings
           ;
 
 Bind ::= Variable:var EQ:anchor LambdaForm:lambda
-                                                {: RESULT = new Bind(position(anchorleft, anchorright),
-                                                    var, lambda); :}
+                                                {: RESULT = new Bind(position(anchorleft, anchorright), var, lambda); :}
        ;
 
 Bindings ::= NonEmptyBindings:bindings
@@ -112,11 +111,9 @@ NonEmptyBindings ::= Bind:head TERMINATOR NonEmptyBindings:tail
 //
 
 LambdaForm ::= LAMBDA:anchor LBRA Variables:free RBRA Variables:args LambdaArrow:arrow Expression:expr
-                                                {: RESULT = new LambdaForm(position(anchorleft, anchorright), free,
-                                                    arrow, args, expr); :}
+                                                {: RESULT = new LambdaForm(position(anchorleft, anchorright), free, arrow, args, expr); :}
              | LAMBDA:anchor Variables:args LambdaArrow:arrow Expression:expr
-                                                {: RESULT = new LambdaForm(position(anchorleft, anchorright), null,
-                                                    arrow, args, expr); :}
+                                                {: RESULT = new LambdaForm(position(anchorleft, anchorright), null, arrow, args, expr); :}
              ;
 
 //
@@ -137,7 +134,7 @@ LetBinding ::= AnyLet:let Bindings:binds IN Expression:expr
                                                 {: RESULT = new LetBinding(position(letleft, letright), let, binds, expr); :}
                 ;
 
-CaseExpression ::= CASE:anchor Expression:expr OF LBRA Alternatives:alternatives RBRA
+CaseExpression ::= MATCH:anchor Expression:expr LBRA Alternatives:alternatives RBRA
                                                 {: RESULT = new CaseExpression(position(anchorleft, anchorright), expr, alternatives); :}
                  ;
 
@@ -146,58 +143,51 @@ CaseExpression ::= CASE:anchor Expression:expr OF LBRA Alternatives:alternatives
 //
 
 Application ::= Variable:function Atoms:args
-                                                {: RESULT = new FunctionApplication(position(functionleft, functionright),
-                                                    function, args); :}
+                                                {: RESULT = new FunctionApplication(position(functionleft, functionright), function, args); :}
               | Constructor:constr Atoms:args
-                                                {: RESULT = new ConstructorApplication(position(constrleft, constrright),
-                                                    constr, args); :}
+                                                {: RESULT = new ConstructorApplication(position(constrleft, constrright), constr, args); :}
               | PRIMITIVE:op Atoms:args
-                                                {: RESULT = new PrimitiveApplication(position(opleft, opright),
-                                                    op, args); :}
+                                                {: RESULT = new PrimitiveApplication(position(opleft, opright), op, args); :}
               ;
 
 //
 //
 //
 
-Alternatives ::= AlgebraicAlternative:head TERMINATOR AlgebraicAlternatives:tail DefaultAlternative:def
+Alternatives ::= AlgebraicAlternatives:alts DefaultAlternative:def
                                                 {: RESULT = new Alternatives(
-                                                    position(headleft, headright), cons(head, tail), def); :}
-               | PrimitiveAlternative:head TERMINATOR PrimitiveAlternatives:tail DefaultAlternative:def
+                                                    position(headleft, headright), alts, def); :}
+               | PrimitiveAlternatives:alts DefaultAlternative:def
                                                 {: RESULT = new Alternatives(
-                                                    position(headleft, headright), cons(head, tail), def); :}
+                                                    position(headleft, headright), alts, def); :}
                | DefaultAlternative:def
                                                 {: RESULT = new Alternatives(position(defleft, defright), nil(), def); :}
                ;
 
 AlgebraicAlternatives ::= AlgebraicAlternative:head TERMINATOR AlgebraicAlternatives:tail
                                                 {: RESULT = cons(head, tail); :}
-                        | Epsilon
-                                                {: RESULT = nil(); :}
+                        | AlgebraicAlternative:head
+                                                {: RESULT = cons(head, nil()); :}
                         ;
 
 PrimitiveAlternatives ::= PrimitiveAlternative:head TERMINATOR PrimitiveAlternatives:tail
                                                 {: RESULT = cons(head, tail); :}
-                        | Epsilon
-                                                {: RESULT = nil(); :}
+                        | PrimitiveAlternative:head
+                                                {: RESULT = cons(head, nil()); :}
                         ;
 
-AlgebraicAlternative ::= Constructor:constr Atoms:args Arrow Expression:expr
-                                                {: RESULT = new AlgebraicAlternative(
-                                                    position(constrleft, constrright), constr, args, expr); :}
+AlgebraicAlternative ::= CASE:anchor Constructor:constr Atoms:args Arrow Expression:expr
+                                                {: RESULT = new AlgebraicAlternative(position(anchorleft, anchorright), constr, args, expr); :}
                        ;
 
-PrimitiveAlternative ::= Literal:literal Arrow Expression:expr
-                                                {: RESULT = new PrimitiveAlternative(
-                                                    position(literalleft, literalright), literal, expr); :}
+PrimitiveAlternative ::= CASE:anchor Literal:literal Arrow Expression:expr
+                                                {: RESULT = new PrimitiveAlternative(position(anchorleft, anchorright), literal, expr); :}
                        ;
 
-DefaultAlternative ::= DEFAULT:anchor Arrow Expression:expr
-                                                                       {: RESULT = new DefaultFallthroughAlternative(
-                                                                               position(anchorleft, anchorright), expr); :}
-                     | Variable:binder Arrow Expression:expr
-                                                                       {: RESULT = new DefaultBindingAlternative(
-                                                                               position(binderleft, binderright), binder, expr); :}
+DefaultAlternative ::= CASE:anchor DEFAULT Arrow Expression:expr
+                                                                       {: RESULT = new DefaultFallthroughAlternative(position(anchorleft, anchorright), expr); :}
+                     | CASE:anchor Variable:binder Arrow Expression:expr
+                                                                       {: RESULT = new DefaultBindingAlternative(position(anchorleft, anchorright), binder, expr); :}
                      | Epsilon:anchor
                                                                        {: RESULT = new NoAlternative(position(anchorleft, anchorright)); :}
                      ;
