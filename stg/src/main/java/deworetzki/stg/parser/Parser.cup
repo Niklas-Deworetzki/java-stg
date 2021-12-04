@@ -41,7 +41,7 @@ non terminal List<Bind> Program;
 non terminal Bind Bind;
 non terminal LambdaForm LambdaForm;
 
-non terminal Expression Expression, CaseExpression, LetExpression;
+non terminal Expression Expression, CaseExpression, LetBinding;
 non terminal Application Application;
 
 non terminal Alternatives Alternatives;
@@ -125,26 +125,26 @@ LambdaForm ::= LAMBDA:anchor Variables:args LambdaArrow:arrow LBRA Variables:fre
 
 Expression ::= CaseExpression:expr
                                                 {: RESULT = expr; :}
-             | LetExpression:expr
+             | LetBinding:expr
                                                 {: RESULT = expr; :}
              | Application:expr
                                                 {: RESULT = expr; :}
              ;
 
-LetExpression ::= AnyLet:let Bindings:binds IN Expression:expr
-                                                {: RESULT = new LetExpression(position(letleft, letright), let
+LetBinding ::= AnyLet:let Bindings:binds IN Expression:expr
+                                                {: RESULT = new LetBinding(position(letleft, letright), let,
                                                     binds, expr); :}
                 | AnyLet:let TERMINATOR Bindings:binds IN Expression:expr
-                                                {: RESULT = new LetExpression(position(letleft, letright), let
+                                                {: RESULT = new LetBinding(position(letleft, letright), let,
                                                     binds, expr); :}
                 | AnyLet:let Bind:head TERMINATOR INDENT Bindings:binds UNINDENT IN Expression:expr
-                                                {: RESULT = new LetExpression(position(letleft, letright), let
+                                                {: RESULT = new LetBinding(position(letleft, letright), let,
                                                     cons(head, binds), expr); :}
                 ;
 
 CaseExpression ::= CASE:anchor Expression:expr OF TERMINATOR INDENT Alternatives:alternatives UNINDENT
                                                 {: RESULT = new CaseExpression(position(anchorleft, anchorright),
-                                                    expression, alternatives); :}
+                                                    expr, alternatives); :}
                  ;
 
 //
