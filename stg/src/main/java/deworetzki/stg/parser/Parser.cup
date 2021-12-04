@@ -33,7 +33,7 @@ terminal LBRA, RBRA;
 terminal LET, LETREC, IN;
 terminal CASE, OF, DEFAULT;
 terminal EQ, LAMBDA, SINGLEARROW, DOUBLEARROW;
-terminal VARIABLE, TYPE, PRIMITIVE;
+terminal String VARIABLE, TYPE, PRIMITIVE;
 
 terminal Integer INTLIT;
 
