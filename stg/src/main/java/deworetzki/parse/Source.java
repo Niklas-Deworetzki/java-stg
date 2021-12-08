@@ -1,6 +1,6 @@
 package deworetzki.parse;
-import java.io.File;
-import java.io.IOException;
+
+import java.io.*;
 import java.nio.file.Files;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -20,26 +20,39 @@ import java.util.Optional;
  * can represent an input stream.
  * </p>
  */
-public final class Source {
+public final class Source implements Closeable {
     private final File inputFile;
     private final String name;
+    private final InputStream inputStream;
 
-    private Source(File inputFile, String name) {
+    private Source(File inputFile, String name) throws FileNotFoundException {
         this.inputFile = inputFile;
         this.name = name;
+        this.inputStream = openStream(inputFile);
+    }
+
+    /**
+     * Returns an {@link InputStream} reading the contents of this {@link Source}.
+     */
+    public InputStream getInputStream() {
+        return inputStream;
+    }
+
+    private static InputStream openStream(File file) throws FileNotFoundException {
+        return (file == null) ? System.in : new FileInputStream(file);
     }
 
     /**
      * Creates a new {@link Source} for the given {@link File}.
      */
-    public static Source fromFile(File file) {
+    public static Source fromFile(File file) throws FileNotFoundException {
         return new Source(file, file.getPath());
     }
 
     /**
      * Creates a new {@link Source} for the standard input stream.
      */
-    public static Source fromStdIn() {
+    public static Source fromStdIn() throws FileNotFoundException {
         return new Source(null, "<stdin>");
     }
 
@@ -85,5 +98,12 @@ public final class Source {
     @Override
     public String toString() {
         return "Source{" + name + '}';
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (inputFile != null) {
+            inputStream.close();
+        }
     }
 }
