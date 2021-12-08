@@ -45,13 +45,13 @@ import static deworetzik.stg.parse.Sym.*;
     }
 %}
 
-WhiteSpace     = \s+
+WhiteSpace  = \s+
 
 Comment     = {LineComment}
 LineComment = "//".*
 
-ArbitraryCharacter = [^#\s]
-VariableName  = [^A-Z0-9#\s] {ArbitraryCharacter}*
+ArbitraryCharacter = [^#{()}\\\s]
+VariableName  = [^A-Z0-9#{()}\\\s] {ArbitraryCharacter}*
 TypeName      = [A-Z] {ArbitraryCharacter}*
 PrimitiveName = {VariableName} "#"
 
@@ -63,8 +63,10 @@ PrimitiveInteger = {BoxedInteger} "#"
 {WhiteSpace}                         { /* Ignore whitespace */  }
 {Comment}                            { /* Ignore comments */ }
 
-"{"      { return symbol(LBRA); }
-"}"      { return symbol(RBRA); }
+"{"      { return symbol(LEFT); }
+"("      { return symbol(LEFT); }
+"}"      { return symbol(RIGHT); }
+")"      { return symbol(RIGHT); }
 
 "let"     { return symbol(LET); }
 "letrec"  { return symbol(LETREC); }
@@ -78,7 +80,6 @@ PrimitiveInteger = {BoxedInteger} "#"
 "->"     { return symbol(SINGLEARROW); }
 "=>"     { return symbol(DOUBLEARROW); }
 
-^ {VariableName} { return symbol(TOPLEVELNAME, yytext()); }
 {VariableName}   { return symbol(VARIABLE, yytext()); }
 {TypeName}       { return symbol(TYPE, yytext()); }
 {PrimitiveName}  { return symbol(PRIMITIVE, yytext()); }

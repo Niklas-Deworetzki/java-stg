@@ -27,12 +27,12 @@ private static <T> List<T> cons(T head, List<T> tail) {
 }
 :}
 
-terminal LBRA, RBRA;
+terminal LEFT, RIGHT;
 
 terminal LET, LETREC, IN;
 terminal MATCH, CASE, DEFAULT;
 terminal EQ, LAMBDA, SINGLEARROW, DOUBLEARROW;
-terminal String TOPLEVELNAME, VARIABLE, TYPE, PRIMITIVE;
+terminal String VARIABLE, TYPE, PRIMITIVE;
 
 terminal Integer INTLIT;
 
@@ -53,21 +53,21 @@ non terminal Variable Variable;
 non terminal Constructor Constructor;
 non terminal Literal Literal;
 
-non terminal List<Atom> Atoms;
-non terminal List<Bind> Bindings, NonEmptyBindings;
+non terminal List<Atom> Atoms, AtomList;
+non terminal List<Bind> Bindings;
 non terminal List<Variable> Variables;
 
-non terminal Boolean AnyLet, LambdaArrow;
+non terminal Boolean LetIsRecursive, LambdaArrow;
 non terminal Epsilon;
-non terminal Arrow;
+non terminal CaseArrow;
 
 start with Program;
 
 
 
 // TODO: Warn if double?
-Arrow ::= SINGLEARROW | DOUBLEARROW
-        ;
+CaseArrow ::= SINGLEARROW | DOUBLEARROW
+            ;
 
 LambdaArrow ::= DOUBLEARROW
                                                 {: RESULT = false; :}
@@ -75,11 +75,11 @@ LambdaArrow ::= DOUBLEARROW
                                                 {: RESULT = true; :}
               ;
 
-AnyLet ::= LET
+LetIsRecursive ::= LET
                                                 {: RESULT = false; :}
-         | LETREC
+                 | LETREC
                                                 {: RESULT = true; :}
-         ;
+                 ;
 
 Epsilon ::=  ; // Empty symbol
 
@@ -89,27 +89,21 @@ Program ::= Bindings:bindings
                                                 {: RESULT = new Program(position(bindingsleft, bindingsright), bindings); :}
           ;
 
-Bind ::= TOPLEVELNAME:var EQ:anchor LambdaForm:lambda
+Bindings ::= Bind:head Bindings:tail
+                                                {: RESULT = cons(head, tail); :}
+           | Bind:head
+                                                {: RESULT = cons(head, nil()); :}
+           ;
+
+Bind ::= VARIABLE:var EQ:anchor LambdaForm:lambda
                                                 {: RESULT = new Bind(position(anchorleft, anchorright), new Variable(position(varleft, varright), var), lambda); :}
        ;
 
-Bindings ::= NonEmptyBindings:bindings
-                                                {: RESULT = bindings; :}
-           | Epsilon
-                                                {: RESULT = nil(); :}
-           ;
-
-NonEmptyBindings ::= Bind:head NonEmptyBindings:tail
-                                                {: RESULT = cons(head, tail); :}
-                   | Bind:head
-                                                {: RESULT = cons(head, nil()); :}
-                   ;
-
 //
 //
 //
 
-LambdaForm ::= LAMBDA:anchor LBRA Variables:free RBRA Variables:args LambdaArrow:arrow Expression:expr
+LambdaForm ::= LAMBDA:anchor LEFT Variables:free RIGHT Variables:args LambdaArrow:arrow Expression:expr
                                                 {: RESULT = new LambdaForm(position(anchorleft, anchorright), free, arrow, args, expr); :}
              | LAMBDA:anchor Variables:args LambdaArrow:arrow Expression:expr
                                                 {: RESULT = new LambdaForm(position(anchorleft, anchorright), null, arrow, args, expr); :}
@@ -129,11 +123,11 @@ Expression ::= CaseExpression:expr
                                                 {: RESULT = literal; :}
              ;
 
-LetBinding ::= AnyLet:let Bindings:binds IN Expression:expr
+LetBinding ::= LetIsRecursive:let Bindings:binds IN Expression:expr
                                                 {: RESULT = new LetBinding(position(letleft, letright), let, binds, expr); :}
-                ;
+             ;
 
-CaseExpression ::= MATCH:anchor Expression:expr LBRA Alternatives:alternatives RBRA
+CaseExpression ::= MATCH:anchor Expression:expr LEFT Alternatives:alternatives RIGHT
                                                 {: RESULT = new CaseExpression(position(anchorleft, anchorright), expr, alternatives); :}
                  ;
 
@@ -163,15 +157,15 @@ NonDefaultAlternatives ::= CASE:anchor Alternative:head NonDefaultAlternatives:t
                                                 {: RESULT = nil(); :}
                          ;
 
-Alternative ::= Constructor:constr Atoms:args Arrow Expression:expr
+Alternative ::= Constructor:constr Atoms:args CaseArrow Expression:expr
                                                 {: RESULT = new AlgebraicAlternative(position(constrleft, constrright), constr, args, expr); :}
-              | Literal:literal Arrow Expression:expr
+              | Literal:literal CaseArrow Expression:expr
                                                 {: RESULT = new PrimitiveAlternative(position(literalleft, literalright), literal, expr); :}
               ;
-DefaultAlternative ::= DEFAULT:anchor Arrow Expression:expr
+DefaultAlternative ::= DEFAULT:anchor CaseArrow Expression:expr
                                                 {: RESULT = new DefaultFallthroughAlternative(position(anchorleft, anchorright), expr); :}
-                     | DEFAULT:anchor Variable:binder Arrow Expression:expr
-                                                {: RESULT = new DefaultBindingAlternative(position(anchorleft, anchorright), binder, expr); :}
+                     | Variable:binder CaseArrow Expression:expr
+                                                {: RESULT = new DefaultBindingAlternative(position(binderleft, binderright), binder, expr); :}
                      | Epsilon:anchor
                                                 {: RESULT = new NoAlternative(position(anchorleft, anchorright)); :}
                      ;
@@ -186,11 +180,15 @@ Variables ::= Variable:head Variables:tail
                                                 {: RESULT = nil(); :}
             ;
 
-Atoms ::= Atom:head Atoms:tail
-                                                {: RESULT = cons(head, tail); :}
-        | Epsilon
-                                                {: RESULT = nil(); :}
+Atoms ::= LEFT AtomList:list RIGHT
+                                                {: RESULT = list; :}
         ;
+
+AtomList ::= Atom:head AtomList:tail
+                                                {: RESULT = cons(head, tail); :}
+           | Epsilon
+                                                {: RESULT = nil(); :}
+           ;
 
 Atom ::= Variable:variable
                                                 {: RESULT = variable; :}
