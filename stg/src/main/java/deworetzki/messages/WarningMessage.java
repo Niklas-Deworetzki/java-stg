@@ -3,16 +3,12 @@ package deworetzki.messages;
 import deworetzki.parse.Position;
 import org.fusesource.jansi.Ansi;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 import static deworetzki.messages.MessageUtils.stringRepresentation;
 
 public abstract class WarningMessage implements CliMessage {
-    protected static List<WarningMessage> COLLECTED_WARNINGS = new ArrayList<>();
-
     private final String message;
     private final Position position;
     private final Object expected, actual;
@@ -64,19 +60,13 @@ public abstract class WarningMessage implements CliMessage {
         return Optional.of(actual).filter(hasValue);
     }
 
-    public void emitWarning() {
-        COLLECTED_WARNINGS.add(this);
+    public final void emitWarning() {
+        System.out.println(toAnsi());
     }
 
     @Override
     public String toString() {
         return toText();
-    }
-
-    public static List<WarningMessage> flushWarnings() {
-        List<WarningMessage> warnings = new ArrayList<>(COLLECTED_WARNINGS);
-        COLLECTED_WARNINGS.clear();
-        return warnings;
     }
 
     public static class IndentationCharacterMismatch extends WarningMessage {

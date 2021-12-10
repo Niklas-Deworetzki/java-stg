@@ -38,7 +38,8 @@ public interface CliMessage {
         return description.toString();
     }
 
-    default void toAnsi(Ansi ansi) {
+    default Ansi toAnsi() {
+        final Ansi ansi = Ansi.ansi();
         ansi.fg(getHighlightColor()).bold()
                 .a(getTag())
                 .reset()
@@ -55,5 +56,6 @@ public interface CliMessage {
             ansi.a("\n");
             getPosition().toAnsi(ansi);
         }
+        return ansi;
     }
 }

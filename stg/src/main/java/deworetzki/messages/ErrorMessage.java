@@ -3,6 +3,7 @@ package deworetzki.messages;
 import deworetzki.parse.Position;
 import org.fusesource.jansi.Ansi;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -68,6 +69,13 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
 
         public InternalError(String message) {
             super(message, Position.NONE);
+        }
+    }
+
+    public static class InputError extends ErrorMessage {
+        public InputError(IOException exception) {
+            super(exception.getMessage() != null ? exception.getMessage() : exception.toString(), Position.NONE);
+            addSuppressed(exception);
         }
     }
 

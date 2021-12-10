@@ -1,35 +1,39 @@
 package deworetzki.stg;
 
-import deworetzki.parse.Source;
-
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.*;
 
-public final class Options {
-    public DebugFlag debugFlag;
-    public Set<Extensions> extensions = EnumSet.noneOf(Extensions.class);
-    private File inputFile;
+import static picocli.CommandLine.*;
 
-    public Options(String[] args) {
-        for (String arg : args) {
-            enableOption(arg);
-        }
+@Command(
+
+)
+public final class Options implements Iterable<File> {
+    @Parameters(paramLabel = "INPUT")
+    File[] inputFiles = {null};
+
+    @Option(names = {"--debug", "-d"}, description = "${COMPLETION-CANDIDATES}")
+    DebugFlag debugFlag = DebugFlag.NONE;
+
+    @Option(names = {"--enable", "-e"}, description = "${COMPLETION-CANDIDATES}")
+    Set<Extensions> extensions = EnumSet.noneOf(Extensions.class);
+
+    @Option(names = {"--help", "-h"}, usageHelp = true)
+    boolean isHelpRequested;
+
+    @Unmatched
+    List<String> unknownOptions = new ArrayList<>();
+
+
+    public boolean shouldDisplayHelp() {
+        return isHelpRequested || !unknownOptions.isEmpty();
     }
 
-    public Source openSource() throws FileNotFoundException {
-        return Source.fromFile(inputFile);
+    @Override
+    public Iterator<File> iterator() {
+        return Arrays.asList(inputFiles).iterator();
     }
 
-    private void enableOption(String arg) {
-        switch (arg) {
-            case "--debug-lexer" -> debugFlag = DebugFlag.LEXER;
-            case "--allow-nonprimitive-numbers" -> extensions.add(Extensions.ALLOW_NONPRIMITIVE_NUMBERS);
-            case "--allow-double-case-arrow" -> extensions.add(Extensions.ALLOW_DOUBLE_CASE_ARROW);
-            default -> inputFile = new File(arg);
-        }
-    }
 
     enum DebugFlag {
         LEXER, NONE

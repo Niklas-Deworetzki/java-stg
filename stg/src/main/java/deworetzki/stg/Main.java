@@ -1,43 +1,71 @@
 package deworetzki.stg;
 
 import deworetzik.stg.parse.Parser;
-import deworetzik.stg.parse.Sym;
+import deworetzki.messages.ErrorMessage;
 import deworetzki.parse.Source;
 import deworetzki.parse.symbol.RichSymbolFactory;
 import deworetzki.stg.parser.Scanner;
-import java_cup.runtime.Symbol;
+import deworetzki.stg.syntax.Bind;
+import deworetzki.stg.syntax.Program;
+import picocli.CommandLine;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public final class Main {
-
     public static void main(String[] args) {
-        final Options options = new Options(args);
+        final Options options = CommandLine.populateCommand(new Options(), args);
 
-        try (Source source = options.openSource()) {
-            final Scanner lexer = new Scanner(new InputStreamReader(source.getInputStream()), source);
-            if (options.debugFlag == Options.DebugFlag.LEXER) {
-                Symbol symbol;
-                do {
-                    symbol = lexer.next_token();
-                    dumpToken(symbol);
-                } while (symbol.sym != Sym.EOF);
-                return;
+        if (options.shouldDisplayHelp()) {
+            CommandLine.usage(options, System.out);
+        } else {
+
+            final List<Bind> inputProgram = new ArrayList<>();
+
+            for (File inputFile : options) {
+                try {
+                    inputProgram.addAll(loadInputFile(options, inputFile));
+                } catch (ErrorMessage errorMessage) {
+                    System.out.println(errorMessage.toAnsi());
+                }
             }
 
-            final Parser parser = new Parser(lexer, new RichSymbolFactory());
-
-            parser.parse();
-
-            System.out.println(source.getName() + ": Success!");
-        } catch (Exception exception) {
-            System.out.println(exception.getMessage());
+            System.out.println("Loaded " + inputProgram.size() + " Bindings.");
         }
     }
 
-    private static void dumpToken(Symbol symbol) {
-        String tokenName = Sym.terminalNames[symbol.sym];
-        if (symbol.value == null) System.out.println(tokenName);
-        else System.out.printf("%s (%s)%n", tokenName, symbol.value);
+    private static List<Bind> loadInputFile(final Options options, final File file) throws ErrorMessage {
+        try (Source source = Source.fromFile(file)) {
+            final Scanner lexer = new Scanner(new InputStreamReader(source.getInputStream()), source);
+            final Parser parser = new Parser(lexer, new RichSymbolFactory());
+
+            final Program program = parse(parser);
+            if (program != null) {
+                return program.bindings;
+            }
+            return Collections.emptyList();
+        } catch (IOException ioException) {
+            throw new ErrorMessage.InputError(ioException);
+        }
+    }
+
+    private static Program parse(Parser parser) throws ErrorMessage {
+        try {
+            Object result = parser.parse().value;
+            return (Program) result;
+
+        } catch (ErrorMessage errorMessage) {
+            throw errorMessage;
+
+        } catch (Exception cupException) {
+            // Create a new CompileError for the Exception thrown by CUP.
+            throw new ErrorMessage.InternalError(
+                    "The CUP Parser encountered an exception: " + cupException,
+                    cupException);
+        }
     }
 }
