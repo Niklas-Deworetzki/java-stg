@@ -6,26 +6,31 @@ import org.fusesource.jansi.Ansi;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import static deworetzki.messages.MessageUtils.stringRepresentation;
-
 public abstract class WarningMessage implements CliMessage {
     private final String message;
     private final Position position;
-    private final Object expected, actual;
+    private Object expected = NO_VALUE, actual = NO_VALUE;
+    private String hint;
 
     // A sentinel value used to determine, whether an "expected" or "actual" value for the error message has been given.
     // Simply using null may lead to problems, whenever null is a desired or possible value.
     private static final Object NO_VALUE = new Object();
 
-    protected WarningMessage(String message, Position position, Object expected, Object actual) {
+    protected WarningMessage(String message, Position position) {
         this.message = message;
         this.position = position;
+    }
+
+    protected void withExpected(Object expected) {
         this.expected = expected;
+    }
+
+    protected void withActual(Object actual) {
         this.actual = actual;
     }
 
-    public WarningMessage(String message, Position position) {
-        this(message, position, NO_VALUE, NO_VALUE);
+    protected void withHint(String hint) {
+        this.hint = hint;
     }
 
     @Override
@@ -60,6 +65,11 @@ public abstract class WarningMessage implements CliMessage {
         return Optional.of(actual).filter(hasValue);
     }
 
+    @Override
+    public Optional<String> getHint() {
+        return Optional.ofNullable(hint);
+    }
+
     public final void emitWarning() {
         System.out.println(toAnsi());
     }
@@ -69,10 +79,18 @@ public abstract class WarningMessage implements CliMessage {
         return toText();
     }
 
-    public static class IndentationCharacterMismatch extends WarningMessage {
-        public IndentationCharacterMismatch(Position position, char previouslyUsed, char currentlyUsed) {
-            super("Input mixes different types of indentation characters.", position,
-                    stringRepresentation(previouslyUsed), stringRepresentation(currentlyUsed));
+    public static class AmbiguousBoxedInteger extends WarningMessage {
+        public AmbiguousBoxedInteger(Position position) {
+            super("Ambiguous use of boxed literal in case. Did you meant to use a primitive or algebraic alternative?", position);
+            withExpected("Algebraic or primitive alternative");
+        }
+    }
+
+    public static class DoubleCaseArrow extends WarningMessage {
+        public DoubleCaseArrow(Position position) {
+            super("Use of double arrow in case is not recommended. Cases are not updateable.", position);
+            withExpected("Single arrow ( -> )");
+            withActual("Double arrow ( => )");
         }
     }
 }

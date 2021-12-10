@@ -42,6 +42,7 @@ public final class Main {
         try (Source source = Source.fromFile(file)) {
             final Scanner lexer = new Scanner(new InputStreamReader(source.getInputStream()), source);
             final Parser parser = new Parser(lexer, new RichSymbolFactory());
+            parser.options = options;
 
             final Program program = parse(parser);
             if (program != null) {

@@ -29,20 +29,26 @@ public final class Options implements Iterable<File> {
         return isHelpRequested || !unknownOptions.isEmpty();
     }
 
+    public boolean isExtensionEnabled(Extensions extension) {
+        return extensions.contains(extension);
+    }
+
     @Override
     public Iterator<File> iterator() {
         return Arrays.asList(inputFiles).iterator();
     }
 
 
-    enum DebugFlag {
+    public enum DebugFlag {
         LEXER, NONE
     }
 
-    enum Extensions {
-        ALLOW_NONPRIMITIVE_NUMBERS,
-        ALLOW_DOUBLE_CASE_ARROW,
-        ELIDE_EMPTY_ATOMS,
+    public enum Extensions {
+        ALLOW_NONPRIMITIVE_NUMBERS;
+
+        public String getHint() {
+            return "Did you mean to enable the '" + this + "' extension?";
+        }
     }
 
 }

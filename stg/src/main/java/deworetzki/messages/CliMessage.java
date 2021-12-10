@@ -20,6 +20,8 @@ public interface CliMessage {
 
     Optional<Object> getActual();
 
+    Optional<String> getHint();
+
     default String toText() {
         final StringBuilder description = new StringBuilder();
         description.append(getMessage());
@@ -29,6 +31,9 @@ public interface CliMessage {
 
         getActual().ifPresent(actual ->
                 description.append("\n\tActual: ").append(actual));
+
+        getHint().ifPresent(hint ->
+                description.append("\n\tHint: ").append(hint));
 
         if (getPosition() != null && getPosition() != Position.NONE) {
             description.append("\n")
@@ -51,6 +56,9 @@ public interface CliMessage {
 
         getActual().ifPresent(actual ->
                 ansi.a("\n\tActual:   " + actual));
+
+        getHint().ifPresent(hint ->
+                ansi.append("\n\tHint: ").append(hint));
 
         if (getPosition() != null && getPosition() != Position.NONE) {
             ansi.a("\n");

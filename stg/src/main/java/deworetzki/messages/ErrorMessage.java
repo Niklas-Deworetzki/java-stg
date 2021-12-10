@@ -1,6 +1,7 @@
 package deworetzki.messages;
 
 import deworetzki.parse.Position;
+import deworetzki.stg.Options;
 import org.fusesource.jansi.Ansi;
 
 import java.io.IOException;
@@ -11,21 +12,28 @@ import static deworetzki.messages.MessageUtils.stringRepresentation;
 
 public abstract class ErrorMessage extends RuntimeException implements CliMessage {
     private final Position position;
-    private final Object expected, actual;
+    private Object expected = NO_VALUE, actual = NO_VALUE;
+    private String hint;
 
     // A sentinel value used to determine, whether an "expected" or "actual" value for the error message has been given.
     // Simply using null may lead to problems, whenever null is a desired or possible value.
     private static final Object NO_VALUE = new Object();
 
-    protected ErrorMessage(String message, Position position, Object expected, Object actual) {
+    protected ErrorMessage(String message, Position position) {
         super(message);
         this.position = position;
+    }
+
+    protected void withExpected(Object expected) {
         this.expected = expected;
+    }
+
+    protected void withActual(Object actual) {
         this.actual = actual;
     }
 
-    public ErrorMessage(String message, Position position) {
-        this(message, position, NO_VALUE, NO_VALUE);
+    protected void withHint(String hint) {
+        this.hint = hint;
     }
 
     @Override
@@ -53,6 +61,11 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
     @Override
     public Optional<Object> getActual() {
         return Optional.of(actual).filter(hasValue);
+    }
+
+    @Override
+    public Optional<String> getHint() {
+        return Optional.ofNullable(hint);
     }
 
     @Override
@@ -86,10 +99,23 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
         }
     }
 
+    public static class InvalidNumber extends ErrorMessage {
+        public InvalidNumber(Position position, String number) {
+            super(String.format("Invalid number literal '%s' detected in input.", number), position);
+        }
+    }
+
+    public static class BoxedLiteral extends ErrorMessage {
+        public BoxedLiteral(Position position) {
+            super("Boxed literals are not allowed.", position);
+            withHint(Options.Extensions.ALLOW_NONPRIMITIVE_NUMBERS.getHint());
+        }
+    }
+
     public static class SyntaxError extends ErrorMessage {
         public SyntaxError(Position position, Iterable<String> expectedSymbols) {
-            super("Syntax error detected.", position,
-                    String.join(", ", expectedSymbols), NO_VALUE);
+            super("Syntax error detected.", position);
+            withExpected(String.join(", ", expectedSymbols));
         }
     }
 }

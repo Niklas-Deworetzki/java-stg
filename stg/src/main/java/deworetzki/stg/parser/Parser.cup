@@ -1,13 +1,19 @@
 package deworetzik.stg.parse;
 
-import deworetzki.parse.Position;
 import java_cup.runtime.*;
 import java.util.*;
 
-import deworetzki.stg.syntax.*;
+import deworetzki.parse.Position;
 import deworetzki.parse.symbol.*;
+import deworetzki.stg.syntax.*;
+
+import deworetzki.messages.*;
+import deworetzki.stg.Options.Extensions;
+import deworetzki.stg.Options;
 
 parser code {:
+public Options options;
+
 /**
  * Creates a new {@link Position} object from given left and right values.
  */
@@ -25,6 +31,10 @@ private static <T> List<T> cons(T head, List<T> tail) {
     tail.add(0, head);
     return tail;
 }
+
+public boolean isExtensionEnabled(Extensions extension) {
+    return options.isExtensionEnabled(extension);
+}
 :}
 
 terminal LEFT, RIGHT;
@@ -34,7 +44,7 @@ terminal MATCH, CASE, DEFAULT;
 terminal EQ, LAMBDA, SINGLEARROW, DOUBLEARROW;
 terminal String VARIABLE, TYPE, PRIMITIVE;
 
-terminal Integer INTLIT;
+terminal Integer INTLIT, INTBOX;
 
 non terminal Program Program;
 non terminal Bind Bind;
@@ -64,14 +74,16 @@ non terminal CaseArrow;
 start with Program;
 
 
-
-// TODO: Warn if double?
-CaseArrow ::= SINGLEARROW | DOUBLEARROW
+CaseArrow ::= SINGLEARROW
+            | DOUBLEARROW:anchor
+                                                {: new WarningMessage.DoubleCaseArrow(position(anchorleft, anchorright))
+                                                    .emitWarning();
+                                                :}
             ;
 
-LambdaArrow ::= DOUBLEARROW
+LambdaArrow ::= SINGLEARROW
                                                 {: RESULT = false; :}
-              | SINGLEARROW
+              | DOUBLEARROW
                                                 {: RESULT = true; :}
               ;
 
@@ -121,6 +133,14 @@ Expression ::= CaseExpression:expr
                                                 {: RESULT = expr; :}
              | Literal:literal
                                                 {: RESULT = literal; :}
+             | INTBOX:box
+                                                {: final Position position = position(boxleft, boxright);
+                                                   if (!isExtensionEnabled(Extensions.ALLOW_NONPRIMITIVE_NUMBERS)) {
+                                                       throw new ErrorMessage.BoxedLiteral(position);
+                                                   }
+                                                   final Constructor constructor = new Constructor(position, "Int#");
+                                                   final Literal literal = new Literal(position, box);
+                                                   RESULT = new ConstructorApplication(position, constructor, List.of(literal)); :}
              ;
 
 LetBinding ::= LetIsRecursive:let Bindings:binds IN Expression:expr
@@ -161,6 +181,11 @@ Alternative ::= Constructor:constr Atoms:args CaseArrow Expression:expr
                                                 {: RESULT = new AlgebraicAlternative(position(constrleft, constrright), constr, args, expr); :}
               | Literal:literal CaseArrow Expression:expr
                                                 {: RESULT = new PrimitiveAlternative(position(literalleft, literalright), literal, expr); :}
+              | INTBOX:literal CaseArrow Expression:expr
+                                                {: new WarningMessage.AmbiguousBoxedInteger(position(literalleft, literalright)).emitWarning();
+                                                   RESULT =  new PrimitiveAlternative(position(literalleft, literalright),
+                                                        new Literal(position(literalleft, literalright), literal), expr);
+                                                :}
               ;
 DefaultAlternative ::= DEFAULT:anchor CaseArrow Expression:expr
                                                 {: RESULT = new DefaultFallthroughAlternative(position(anchorleft, anchorright), expr); :}

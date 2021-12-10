@@ -19,29 +19,31 @@ import static deworetzik.stg.parse.Sym.*;
 %line
 %column
 
-%eofclose
+%eofclose false
 %eofval{
     // This needs to be specified when using a custom sym class name
     return new RichSymbol(currentPosition(), EOF);
 %eofval}
 
-%implements java.io.Closeable
 %ctorarg Source source
+
 %init{
     this.source = source;
 %init}
 %{
     public final Source source;
 
-    // Implement java.io.Closeable for Scanner.
-    @Override
-    public void close() throws java.io.IOException {
-        yyclose();
-    }
-
     public Position currentPosition() {
         // Return the current position, counting lines and columns beginning from 1.
         return new Position(source, yyline + 1, yycolumn + 1);
+    }
+
+    private int integerValue(String str) throws ErrorMessage {
+        try {
+            return Integer.parseInt(str);
+        } catch (NumberFormatException ignored) {
+            throw new ErrorMessage.InvalidNumber(currentPosition(), str);
+        }
     }
 %}
 
@@ -84,7 +86,8 @@ PrimitiveInteger = {BoxedInteger} "#"
 {TypeName}       { return symbol(TYPE, yytext()); }
 {PrimitiveName}  { return symbol(PRIMITIVE, yytext()); }
 
-{PrimitiveInteger} { return symbol(INTLIT, Integer.parseInt(yytext().substring(0, yytext().length() - 1))); }
+{BoxedInteger}     { return symbol(INTBOX, integerValue(yytext())); }
+{PrimitiveInteger} { return symbol(INTLIT, integerValue(yytext().substring(0, yytext().length() - 1))); }
 
 [^]     { // This rule matches any previously unmatched characters.
           char offendingChar = yytext().charAt(0);
