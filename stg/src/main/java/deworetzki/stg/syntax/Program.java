@@ -12,8 +12,8 @@ import java.util.List;
 public final class Program extends Node implements Iterable<Bind> {
     public final List<Bind> bindings;
 
-    public Program(Position position, List<Bind> bindings) {
-        super(position);
+    public Program(List<Bind> bindings) {
+        super(Position.NONE);
         this.bindings = bindings;
     }
 

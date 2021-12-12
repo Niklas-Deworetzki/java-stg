@@ -21,9 +21,15 @@ public final class Options implements Iterable<File> {
     @Option(names = {"--help", "-h"}, usageHelp = true)
     boolean isHelpRequested;
 
+    @Option(names = {"--no-prelude", "-n"})
+    boolean noPrelude;
+
     @Unmatched
     List<String> unknownOptions = new ArrayList<>();
 
+    public boolean loadPrelude() {
+        return !noPrelude;
+    }
 
     public boolean shouldDisplayHelp() {
         return isHelpRequested || !unknownOptions.isEmpty();

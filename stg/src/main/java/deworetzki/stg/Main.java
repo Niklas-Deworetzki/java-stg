@@ -6,15 +6,12 @@ import deworetzki.parse.Source;
 import deworetzki.parse.symbol.RichSymbolFactory;
 import deworetzki.stg.parser.Scanner;
 import deworetzki.stg.syntax.Bind;
-import deworetzki.stg.syntax.Program;
 import picocli.CommandLine;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public final class Main {
     public static void main(String[] args) {
@@ -23,19 +20,45 @@ public final class Main {
         if (options.shouldDisplayHelp()) {
             CommandLine.usage(options, System.out);
         } else {
-
-            final List<Bind> inputProgram = new ArrayList<>();
-
-            for (File inputFile : options) {
-                try {
-                    inputProgram.addAll(loadInputFile(options, inputFile));
-                } catch (ErrorMessage errorMessage) {
-                    System.out.println(errorMessage.toAnsi());
-                }
+            try {
+                loadProgram(options).ifPresent((final List<Bind> inputProgram) -> {
+                    System.out.println("Loaded " + inputProgram.size() + " Bindings.");
+                });
+            } catch (ErrorMessage errorMessage) {
+                System.out.println(errorMessage.toAnsi());
             }
-
-            System.out.println("Loaded " + inputProgram.size() + " Bindings.");
         }
+    }
+
+    private static Optional<List<Bind>> loadProgram(final Options options) {
+        final List<Bind> inputProgram = new ArrayList<>();
+
+        if (options.loadPrelude()) {
+            try {
+                inputProgram.addAll(loadPrelude(options));
+            } catch (Exception failedToLoadPrelude) {
+                System.out.println(new ErrorMessage.InternalError("Failed to load prelude: " +
+                        failedToLoadPrelude.getMessage()).toAnsi());
+                return Optional.empty();
+            }
+        }
+
+        boolean anyFailed = false;
+        for (File inputFile : options) {
+            try {
+                inputProgram.addAll(loadInputFile(options, inputFile));
+            } catch (ErrorMessage errorMessage) {
+                anyFailed = true;
+                System.out.println(errorMessage.toAnsi());
+            }
+        }
+
+        if (anyFailed) return Optional.empty();
+        return Optional.of(inputProgram);
+    }
+
+    private static List<Bind> loadPrelude(final Options options) throws ErrorMessage {
+        return Collections.emptyList(); // TODO: Load from internal resource.
     }
 
     private static List<Bind> loadInputFile(final Options options, final File file) throws ErrorMessage {
@@ -44,20 +67,18 @@ public final class Main {
             final Parser parser = new Parser(lexer, new RichSymbolFactory());
             parser.options = options;
 
-            final Program program = parse(parser);
-            if (program != null) {
-                return program.bindings;
-            }
-            return Collections.emptyList();
+            final List<Bind> bindings = parse(parser);
+            return Objects.requireNonNullElse(bindings, Collections.emptyList());
         } catch (IOException ioException) {
             throw new ErrorMessage.InputError(ioException);
         }
     }
 
-    private static Program parse(Parser parser) throws ErrorMessage {
+    @SuppressWarnings("unchecked")
+    private static List<Bind> parse(Parser parser) throws ErrorMessage {
         try {
             Object result = parser.parse().value;
-            return (Program) result;
+            return (List<Bind>) result;
 
         } catch (ErrorMessage errorMessage) {
             throw errorMessage;
