@@ -7,8 +7,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static deworetzki.stg.semantic.Value.*;
-import static deworetzki.stg.utils.CollectionUtils.combineWith;
-import static deworetzki.stg.utils.CollectionUtils.take;
+import static deworetzki.utils.CollectionUtils.combineWith;
+import static deworetzki.utils.CollectionUtils.take;
 import static java.util.Collections.emptyList;
 
 public class Machine {

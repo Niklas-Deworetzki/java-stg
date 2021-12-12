@@ -20,15 +20,18 @@ import java.util.Optional;
  * can represent an input stream.
  * </p>
  */
+@SuppressWarnings("ClassCanBeRecord")
 public final class Source implements Closeable {
     private final File inputFile;
     private final String name;
+    private final boolean shouldClose;
     private final InputStream inputStream;
 
-    private Source(File inputFile, String name) throws FileNotFoundException {
+    public Source(File inputFile, String name, InputStream inputStream, boolean shouldClose) {
         this.inputFile = inputFile;
         this.name = name;
-        this.inputStream = openStream(inputFile);
+        this.inputStream = inputStream;
+        this.shouldClose = shouldClose;
     }
 
     /**
@@ -38,22 +41,18 @@ public final class Source implements Closeable {
         return inputStream;
     }
 
-    private static InputStream openStream(File file) throws FileNotFoundException {
-        return (file == null) ? System.in : new FileInputStream(file);
-    }
-
     /**
      * Creates a new {@link Source} for the given {@link File}.
      */
     public static Source fromFile(File file) throws FileNotFoundException {
-        return new Source(file, file.getPath());
+        return new Source(file, file.getPath(), new FileInputStream(file), true);
     }
 
     /**
      * Creates a new {@link Source} for the standard input stream.
      */
-    public static Source fromStdIn() throws FileNotFoundException {
-        return new Source(null, "<stdin>");
+    public static Source fromStdIn() {
+        return new Source(null, "<stdin>", System.in, false);
     }
 
     /**
@@ -102,7 +101,7 @@ public final class Source implements Closeable {
 
     @Override
     public void close() throws IOException {
-        if (inputFile != null) {
+        if (shouldClose) {
             inputStream.close();
         }
     }

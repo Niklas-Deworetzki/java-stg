@@ -6,9 +6,10 @@ import deworetzki.parse.Source;
 import deworetzki.parse.symbol.RichSymbolFactory;
 import deworetzki.stg.parser.Scanner;
 import deworetzki.stg.syntax.Bind;
+import deworetzki.stg.syntax.Program;
+import deworetzki.utils.ResourceProvider;
 import picocli.CommandLine;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
@@ -21,16 +22,14 @@ public final class Main {
             CommandLine.usage(options, System.out);
         } else {
             try {
-                loadProgram(options).ifPresent((final List<Bind> inputProgram) -> {
-                    System.out.println("Loaded " + inputProgram.size() + " Bindings.");
-                });
+                loadProgram(options).ifPresent(new StgRuntime(options)::run);
             } catch (ErrorMessage errorMessage) {
                 System.out.println(errorMessage.toAnsi());
             }
         }
     }
 
-    private static Optional<List<Bind>> loadProgram(final Options options) {
+    private static Optional<Program> loadProgram(final Options options) {
         final List<Bind> inputProgram = new ArrayList<>();
 
         if (options.loadPrelude()) {
@@ -44,9 +43,9 @@ public final class Main {
         }
 
         boolean anyFailed = false;
-        for (File inputFile : options) {
+        for (var inputFile : options) {
             try {
-                inputProgram.addAll(loadInputFile(options, inputFile));
+                inputProgram.addAll(loadInput(options, inputFile));
             } catch (ErrorMessage errorMessage) {
                 anyFailed = true;
                 System.out.println(errorMessage.toAnsi());
@@ -54,15 +53,15 @@ public final class Main {
         }
 
         if (anyFailed) return Optional.empty();
-        return Optional.of(inputProgram);
+        return Optional.of(new Program(inputProgram));
     }
 
     private static List<Bind> loadPrelude(final Options options) throws ErrorMessage {
         return Collections.emptyList(); // TODO: Load from internal resource.
     }
 
-    private static List<Bind> loadInputFile(final Options options, final File file) throws ErrorMessage {
-        try (Source source = Source.fromFile(file)) {
+    private static List<Bind> loadInput(final Options options, final ResourceProvider<Source, IOException> resource) throws ErrorMessage {
+        try (Source source = resource.get()) {
             final Scanner lexer = new Scanner(new InputStreamReader(source.getInputStream()), source);
             final Parser parser = new Parser(lexer, new RichSymbolFactory());
             parser.options = options;

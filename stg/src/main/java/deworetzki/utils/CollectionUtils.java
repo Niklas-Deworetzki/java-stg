@@ -1,4 +1,4 @@
-package deworetzki.stg.utils;
+package deworetzki.utils;
 
 import java.util.*;
 import java.util.function.BiConsumer;

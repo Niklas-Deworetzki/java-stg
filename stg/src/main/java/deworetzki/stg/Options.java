@@ -1,6 +1,10 @@
 package deworetzki.stg;
 
+import deworetzki.parse.Source;
+import deworetzki.utils.ResourceProvider;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import static picocli.CommandLine.*;
@@ -8,9 +12,9 @@ import static picocli.CommandLine.*;
 @Command(
 
 )
-public final class Options implements Iterable<File> {
+public final class Options implements Iterable<ResourceProvider<Source, IOException>> {
     @Parameters(paramLabel = "INPUT")
-    File[] inputFiles = {null};
+    File[] inputFiles;
 
     @Option(names = {"--debug", "-d"}, description = "${COMPLETION-CANDIDATES}")
     DebugFlag debugFlag = DebugFlag.NONE;
@@ -40,8 +44,12 @@ public final class Options implements Iterable<File> {
     }
 
     @Override
-    public Iterator<File> iterator() {
-        return Arrays.asList(inputFiles).iterator();
+    public Iterator<ResourceProvider<Source, IOException>> iterator() {
+        if (inputFiles == null || inputFiles.length == 0) {
+            return List.of((ResourceProvider<Source, IOException>) Source::fromStdIn).iterator();
+        }
+        return Arrays.stream(inputFiles).map(file -> (ResourceProvider<Source, IOException>) () -> Source.fromFile(file))
+                .iterator();
     }
 
 
