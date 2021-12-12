@@ -62,7 +62,7 @@ public interface CliMessage {
 
         if (getPosition() != null && getPosition() != Position.NONE) {
             ansi.a("\n");
-            getPosition().toAnsi(ansi);
+            getPosition().toAnsi(ansi, getHighlightColor());
         }
         return ansi;
     }

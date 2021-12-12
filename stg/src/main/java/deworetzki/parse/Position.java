@@ -1,4 +1,5 @@
 package deworetzki.parse;
+
 import org.fusesource.jansi.Ansi;
 
 import java.util.Optional;
@@ -183,9 +184,10 @@ public record Position(Source source, int line, int column) {
      * highlighting the column itself is printed in bold red for better visibility.
      * </p>
      *
-     * @param ansi An {@link Ansi} buffer where the output is written to.
+     * @param ansi                An {@link Ansi} buffer where the output is written to.
+     * @param arrowHighlightColor The color used to highlight the error describing the error position.
      */
-    public void toAnsi(Ansi ansi) {
+    public void toAnsi(Ansi ansi, Ansi.Color arrowHighlightColor) {
         ansi.bold()
                 .a(source.getName())
                 .a(": ").boldOff();
