@@ -15,7 +15,7 @@ parser code {:
 public Options options;
 
 @Override
-public void syntax_error(Symbol currentToken) throws CompileError {
+public void syntax_error(Symbol currentToken) throws ErrorMessage {
     Set<String> expectedSymbolNames = new HashSet<>();
     for (var tokenId : this.expected_token_ids()) {
         expectedSymbolNames.add(symbl_name_from_id(tokenId));
@@ -57,7 +57,6 @@ terminal String VARIABLE, TYPE, PRIMITIVE;
 
 terminal Integer INTLIT, INTBOX;
 
-non terminal Program Program;
 non terminal Bind Bind;
 non terminal LambdaForm LambdaForm;
 
@@ -82,7 +81,7 @@ non terminal Boolean LetIsRecursive, LambdaArrow;
 non terminal Epsilon;
 non terminal CaseArrow;
 
-start with Program;
+start with Bindings;
 
 
 CaseArrow ::= SINGLEARROW
@@ -107,10 +106,6 @@ LetIsRecursive ::= LET
 Epsilon ::=  ; // Empty symbol
 
 
-
-Program ::= Bindings:bindings
-                                                {: RESULT = new Program(position(bindingsleft, bindingsright), bindings); :}
-          ;
 
 Bindings ::= Bind:head Bindings:tail
                                                 {: RESULT = cons(head, tail); :}
