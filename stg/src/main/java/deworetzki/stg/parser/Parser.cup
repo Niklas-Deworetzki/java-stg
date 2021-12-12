@@ -14,9 +14,20 @@ import deworetzki.stg.Options;
 parser code {:
 public Options options;
 
-/**
- * Creates a new {@link Position} object from given left and right values.
- */
+@Override
+public void syntax_error(Symbol currentToken) throws CompileError {
+    Set<String> expectedSymbolNames = new HashSet<>();
+    for (var tokenId : this.expected_token_ids()) {
+        expectedSymbolNames.add(symbl_name_from_id(tokenId));
+    }
+
+    // Signal that parsing is about to be interrupted.
+    this.done_parsing();
+
+    throw new ErrorMessage.SyntaxError(position(currentToken.left, currentToken.right), expectedSymbolNames);
+}
+
+
 public Position position(int left, int right) {
     return new Position(
             ((deworetzki.stg.parser.Scanner) getScanner()).source,

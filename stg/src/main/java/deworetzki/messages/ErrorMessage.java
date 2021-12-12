@@ -5,6 +5,7 @@ import deworetzki.stg.Options;
 import org.fusesource.jansi.Ansi;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -113,9 +114,11 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
     }
 
     public static class SyntaxError extends ErrorMessage {
-        public SyntaxError(Position position, Iterable<String> expectedSymbols) {
+        public SyntaxError(Position position, Collection<String> expectedSymbols) {
             super("Syntax error detected.", position);
-            withExpected(String.join(", ", expectedSymbols));
+            if (!expectedSymbols.isEmpty()) {
+                withExpected(String.join(", ", expectedSymbols));
+            }
         }
     }
 }
