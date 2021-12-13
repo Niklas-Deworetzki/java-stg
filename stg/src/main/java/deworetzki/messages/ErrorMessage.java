@@ -123,13 +123,6 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
     }
 
 
-    public static class AnalysisTerminated extends ErrorMessage {
-        public AnalysisTerminated() {
-            super(Position.NONE, "Analysis terminated.");
-        }
-    }
-
-
     public static class Redeclaration extends ErrorMessage {
         public Redeclaration(Variable variable) {
             super(variable.position, "Redeclaration of variable '%s' is not allowed here.", variable.name);
