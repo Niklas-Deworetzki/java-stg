@@ -5,5 +5,5 @@ package deworetzki.stg.syntax;
  * <p>
  * An {@link Atom} is either a {@link Variable} or a {@link Literal}.
  */
-public interface Atom {
+public sealed interface Atom permits Literal, Variable {
 }
