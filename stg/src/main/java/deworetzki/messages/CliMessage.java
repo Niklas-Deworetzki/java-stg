@@ -22,6 +22,10 @@ public interface CliMessage {
 
     Optional<String> getHint();
 
+    default void report() {
+        System.out.println(toAnsi());
+    }
+
     default String toText() {
         final StringBuilder description = new StringBuilder();
         description.append(getMessage());

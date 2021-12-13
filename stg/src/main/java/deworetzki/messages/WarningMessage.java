@@ -70,10 +70,6 @@ public abstract class WarningMessage implements CliMessage {
         return Optional.ofNullable(hint);
     }
 
-    public final void emitWarning() {
-        System.out.println(toAnsi());
-    }
-
     @Override
     public String toString() {
         return toText();
