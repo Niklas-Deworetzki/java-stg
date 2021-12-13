@@ -58,7 +58,9 @@ public final class Options implements Iterable<ResourceProvider<Source, IOExcept
     }
 
     public enum Extensions {
-        ALLOW_NONPRIMITIVE_NUMBERS;
+        ALLOW_NONPRIMITIVE_NUMBERS,
+        ANALYZE_CONSTRUCTOR_ARGS,
+        INFER_FREE_VARIABLES; // TODO: This requires parser changes!
 
         public String getHint() {
             return "Did you mean to enable the '" + this + "' extension?";
