@@ -1,10 +1,14 @@
 package deworetzki.messages;
 
 import deworetzki.parse.Position;
+import deworetzki.stg.syntax.LambdaForm;
+import deworetzki.stg.syntax.Variable;
 import org.fusesource.jansi.Ansi;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public abstract class WarningMessage implements CliMessage {
     private final String message;
@@ -87,6 +91,14 @@ public abstract class WarningMessage implements CliMessage {
             super(position, "Use of double arrow in case is not recommended. Cases are not updateable.");
             withExpected("Single arrow ( -> )");
             withActual("Double arrow ( => )");
+        }
+    }
+
+    public static class UnnecessaryFreeVariables extends WarningMessage {
+        public UnnecessaryFreeVariables(LambdaForm lambda, Set<Variable> unnecessary) {
+            super(lambda.position, "Declared variables contain redundant entries.");
+            withHint("You may remove the following variables: " +
+                    unnecessary.stream().map(variable -> variable.name).collect(Collectors.joining(", ")));
         }
     }
 }

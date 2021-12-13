@@ -2,13 +2,17 @@ package deworetzki.messages;
 
 import deworetzki.parse.Position;
 import deworetzki.stg.Options;
-import deworetzki.stg.syntax.Bind;
+import deworetzki.stg.syntax.LambdaForm;
+import deworetzki.stg.syntax.Variable;
 import org.fusesource.jansi.Ansi;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static deworetzki.messages.MessageUtils.stringRepresentation;
 
@@ -129,9 +133,25 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
         }
     }
 
-    public static class NameCollision extends ErrorMessage {
-        public NameCollision(Bind bind) {
-            super(bind.position, "");
+
+    public static class Redeclaration extends ErrorMessage {
+        public Redeclaration(Variable variable) {
+            super(variable.position, "Redeclaration of variable '%s' is not allowed here.", variable.name);
+        }
+    }
+
+    public static class UndeclaredFreeVariables extends ErrorMessage {
+        public UndeclaredFreeVariables(LambdaForm lambda, Set<Variable> freeVariables) {
+            super(lambda.position, "Declared list of free variables is incomplete.");
+            withHint("The following variables are free in the given lambda: " +
+                    freeVariables.stream().map(variable -> variable.name).collect(Collectors.joining(", ")));
+        }
+    }
+
+    public static class UnknownVariable extends ErrorMessage {
+        public UnknownVariable(Variable variable, Stream<Variable> scope) {
+            super(variable.position, "Unknown variable '%s' encountered.", variable.name);
+            // TODO: Add hint with similar name?
         }
     }
 }
