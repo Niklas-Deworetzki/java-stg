@@ -183,7 +183,7 @@ NonDefaultAlternatives ::= CASE:anchor Alternative:head NonDefaultAlternatives:t
                                                 {: RESULT = nil(); :}
                          ;
 
-Alternative ::= Constructor:constr Variables:args CaseArrow Expression:expr
+Alternative ::= Constructor:constr LEFT Variables:args RIGHT CaseArrow Expression:expr
                                                 {: RESULT = new AlgebraicAlternative(position(constrleft, constrright), constr, args, expr); :}
               | Literal:literal CaseArrow Expression:expr
                                                 {: RESULT = new PrimitiveAlternative(position(literalleft, literalright), literal, expr); :}
