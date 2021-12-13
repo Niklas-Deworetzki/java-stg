@@ -16,9 +16,9 @@ public abstract class WarningMessage implements CliMessage {
     // Simply using null may lead to problems, whenever null is a desired or possible value.
     private static final Object NO_VALUE = new Object();
 
-    protected WarningMessage(String message, Position position) {
-        this.message = message;
+    protected WarningMessage(Position position, String message, Object... args) {
         this.position = position;
+        this.message = String.format(message, args);
     }
 
     protected void withExpected(Object expected) {
@@ -77,14 +77,14 @@ public abstract class WarningMessage implements CliMessage {
 
     public static class AmbiguousBoxedInteger extends WarningMessage {
         public AmbiguousBoxedInteger(Position position) {
-            super("Ambiguous use of boxed literal in case. Did you meant to use a primitive or algebraic alternative?", position);
+            super(position, "Ambiguous use of boxed literal in case. Did you meant to use a primitive or algebraic alternative?");
             withExpected("Algebraic or primitive alternative");
         }
     }
 
     public static class DoubleCaseArrow extends WarningMessage {
         public DoubleCaseArrow(Position position) {
-            super("Use of double arrow in case is not recommended. Cases are not updateable.", position);
+            super(position, "Use of double arrow in case is not recommended. Cases are not updateable.");
             withExpected("Single arrow ( -> )");
             withActual("Double arrow ( => )");
         }
