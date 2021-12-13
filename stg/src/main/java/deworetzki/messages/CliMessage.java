@@ -7,6 +7,10 @@ import java.util.Optional;
 
 public interface CliMessage {
 
+    // A sentinel value used to determine, whether an "expected" or "actual" value for the error message has been given.
+    // Simply using null may lead to problems, whenever null is a desired or possible value.
+    Object NO_VALUE = new Object();
+
     String getTag();
 
     Ansi.Color getHighlightColor();

@@ -17,10 +17,6 @@ public abstract class WarningMessage implements CliMessage {
     private Object expected = NO_VALUE, actual = NO_VALUE;
     private String hint;
 
-    // A sentinel value used to determine, whether an "expected" or "actual" value for the error message has been given.
-    // Simply using null may lead to problems, whenever null is a desired or possible value.
-    private static final Object NO_VALUE = new Object();
-
     protected WarningMessage(Position position, String message, Object... args) {
         this.position = position;
         this.message = String.format(message, args);

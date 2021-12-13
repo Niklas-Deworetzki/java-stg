@@ -21,10 +21,6 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
     private Object expected = NO_VALUE, actual = NO_VALUE;
     private String hint;
 
-    // A sentinel value used to determine, whether an "expected" or "actual" value for the error message has been given.
-    // Simply using null may lead to problems, whenever null is a desired or possible value.
-    private static final Object NO_VALUE = new Object();
-
     protected ErrorMessage(Position position, String message, Object... args) {
         super(String.format(message, args));
         this.position = position;
