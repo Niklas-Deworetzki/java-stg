@@ -87,7 +87,7 @@ start with Bindings;
 CaseArrow ::= SINGLEARROW
             | DOUBLEARROW:anchor
                                                 {: new WarningMessage.DoubleCaseArrow(position(anchorleft, anchorright))
-                                                    .emitWarning();
+                                                    .report();
                                                 :}
             ;
 
@@ -188,7 +188,7 @@ Alternative ::= Constructor:constr Variables:args CaseArrow Expression:expr
               | Literal:literal CaseArrow Expression:expr
                                                 {: RESULT = new PrimitiveAlternative(position(literalleft, literalright), literal, expr); :}
               | INTBOX:literal CaseArrow Expression:expr
-                                                {: new WarningMessage.AmbiguousBoxedInteger(position(literalleft, literalright)).emitWarning();
+                                                {: new WarningMessage.AmbiguousBoxedInteger(position(literalleft, literalright)).report();
                                                    RESULT =  new PrimitiveAlternative(position(literalleft, literalright),
                                                         new Literal(position(literalleft, literalright), literal), expr);
                                                 :}
