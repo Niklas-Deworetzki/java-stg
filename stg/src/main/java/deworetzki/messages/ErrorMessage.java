@@ -20,8 +20,8 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
     // Simply using null may lead to problems, whenever null is a desired or possible value.
     private static final Object NO_VALUE = new Object();
 
-    protected ErrorMessage(String message, Position position) {
-        super(message);
+    protected ErrorMessage(Position position, String message, Object... args) {
+        super(String.format(message, args));
         this.position = position;
     }
 
@@ -77,45 +77,44 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
 
     public static class InternalError extends ErrorMessage {
         public InternalError(String message, Throwable cause) {
-            super(message, Position.NONE);
+            super(Position.NONE, message);
             initCause(cause);
         }
 
         public InternalError(String message) {
-            super(message, Position.NONE);
+            super(Position.NONE, message);
         }
     }
 
     public static class InputError extends ErrorMessage {
         public InputError(IOException exception) {
-            super(exception.getMessage() != null ? exception.getMessage() : exception.toString(), Position.NONE);
+            super(Position.NONE, exception.getMessage() != null ? exception.getMessage() : exception.toString());
             addSuppressed(exception);
         }
     }
 
     public static class IllegalInputCharacter extends ErrorMessage {
         public IllegalInputCharacter(Position position, char offendingChar) {
-            super(String.format("Detected illegal character %s in input.", stringRepresentation(offendingChar)),
-                    position);
+            super(position, "Detected illegal character %s in input.", stringRepresentation(offendingChar));
         }
     }
 
     public static class InvalidNumber extends ErrorMessage {
         public InvalidNumber(Position position, String number) {
-            super(String.format("Invalid number literal '%s' detected in input.", number), position);
+            super(position, "Invalid number literal '%s' detected in input.", number);
         }
     }
 
     public static class BoxedLiteral extends ErrorMessage {
         public BoxedLiteral(Position position) {
-            super("Boxed literals are not allowed.", position);
+            super(position, "Boxed literals are not allowed.");
             withHint(Options.Extensions.ALLOW_NONPRIMITIVE_NUMBERS.getHint());
         }
     }
 
     public static class SyntaxError extends ErrorMessage {
         public SyntaxError(Position position, Collection<String> expectedSymbols) {
-            super("Syntax error detected.", position);
+            super(position, "Syntax error detected.");
             if (!expectedSymbols.isEmpty()) {
                 withExpected(String.join(", ", expectedSymbols));
             }
