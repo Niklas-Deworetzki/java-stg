@@ -12,7 +12,7 @@ import java.util.List;
  */
 public final class AlgebraicAlternative extends Alternative {
     public final Constructor constructor;
-    public final List<Atom> arguments;
+    public final List<Atom> arguments; // FIXME: This should be a variable list.
 
     public AlgebraicAlternative(Position position, Constructor constructor, List<Atom> arguments, Expression expression) {
         super(position, expression);

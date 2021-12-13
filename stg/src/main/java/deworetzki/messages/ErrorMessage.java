@@ -2,6 +2,7 @@ package deworetzki.messages;
 
 import deworetzki.parse.Position;
 import deworetzki.stg.Options;
+import deworetzki.stg.syntax.Bind;
 import org.fusesource.jansi.Ansi;
 
 import java.io.IOException;
@@ -118,6 +119,19 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
             if (!expectedSymbols.isEmpty()) {
                 withExpected(String.join(", ", expectedSymbols));
             }
+        }
+    }
+
+
+    public static class AnalysisTerminated extends ErrorMessage {
+        public AnalysisTerminated() {
+            super(Position.NONE, "Analysis terminated.");
+        }
+    }
+
+    public static class NameCollision extends ErrorMessage {
+        public NameCollision(Bind bind) {
+            super(bind.position, "");
         }
     }
 }
