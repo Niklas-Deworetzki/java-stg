@@ -63,4 +63,57 @@ public final class CollectionUtils {
             return combinator.apply(as.next(), bs.next());
         }
     }
+
+
+    @SafeVarargs
+    public static <E> Set<E> without(Collection<? extends E> original, Collection<? extends E>... removed) {
+        final Set<E> result = new HashSet<>(original);
+        for (Collection<? extends E> elementsToRemove : removed) {
+            result.removeAll(elementsToRemove);
+        }
+        return result;
+    }
+
+    @SafeVarargs
+    public static <E> Set<E> union(Collection<? extends E>... collections) {
+        final Set<E> result = new HashSet<>();
+        for (Collection<? extends E> elements : collections) {
+            result.addAll(elements);
+        }
+        return result;
+    }
+
+    @SafeVarargs
+    public static <R> Iterator<R> flatten(Iterator<? extends R>... iterators) {
+        return new FlatteningIterator<>(iterators);
+    }
+
+    private final static class FlatteningIterator<R> implements Iterator<R> {
+        private final Queue<Iterator<? extends R>> iterators;
+
+        @SafeVarargs
+        public FlatteningIterator(Iterator<? extends R>... iterators) {
+            this.iterators = new ArrayDeque<>(iterators.length);
+            for (Iterator<? extends R> iterator : iterators) {
+                this.iterators.offer(iterator);
+            }
+        }
+
+        private void advance() {
+            while (!iterators.isEmpty() && !iterators.peek().hasNext())
+                iterators.poll();
+        }
+
+        @Override
+        public boolean hasNext() {
+            advance();
+            return !iterators.isEmpty();
+        }
+
+        @Override
+        public R next() {
+            advance();
+            return iterators.remove().next();
+        }
+    }
 }
