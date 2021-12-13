@@ -29,7 +29,18 @@ public final class Constructor extends Node {
     }
 
 
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Constructor constructor) return constructor.name.equals(this.name);
+        return false;
+    }
+
     public static boolean areEqual(Constructor c1, Constructor c2) {
-        return c1.name.equals(c2.name); // TODO: Optimize? And equals/hashcode
+        return c1.name.equals(c2.name); // TODO: Optimize?
     }
 }
