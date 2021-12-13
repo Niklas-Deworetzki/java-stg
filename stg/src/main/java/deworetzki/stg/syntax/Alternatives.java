@@ -6,6 +6,8 @@ import deworetzki.stg.visitor.Visitor;
 import java.util.Iterator;
 import java.util.List;
 
+import static deworetzki.utils.CollectionUtils.flatten;
+
 public final class Alternatives extends Node implements Iterable<Alternative> {
     public final List<Alternative> alternatives; // TODO: Enforce homogeneity
     public final DefaultAlternative defaultAlternative;
@@ -18,7 +20,7 @@ public final class Alternatives extends Node implements Iterable<Alternative> {
 
     @Override
     public Iterator<Alternative> iterator() {
-        return alternatives.iterator();
+        return flatten(alternatives.iterator(), List.of(defaultAlternative).iterator());
     }
 
     @Override
