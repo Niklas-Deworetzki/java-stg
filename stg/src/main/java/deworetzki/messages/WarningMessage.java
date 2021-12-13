@@ -1,6 +1,7 @@
 package deworetzki.messages;
 
 import deworetzki.parse.Position;
+import deworetzki.stg.syntax.Constructor;
 import deworetzki.stg.syntax.LambdaForm;
 import deworetzki.stg.syntax.Variable;
 import org.fusesource.jansi.Ansi;
@@ -99,6 +100,16 @@ public abstract class WarningMessage implements CliMessage {
             super(lambda.position, "Declared variables contain redundant entries.");
             withHint("You may remove the following variables: " +
                     unnecessary.stream().map(variable -> variable.name).collect(Collectors.joining(", ")));
+        }
+    }
+
+    public static class ConstructorArgsDiffer extends WarningMessage {
+        public ConstructorArgsDiffer(Constructor constructor, int argumentCount, Integer detectedCount) {
+            super(constructor.position, "Constructor '%s' accepts %d parameters but earlier occurrences accepted %d.",
+                    constructor.name, argumentCount, detectedCount);
+            withExpected(detectedCount);
+            withActual(argumentCount);
+            withHint("It seems like '" + constructor.name + "' is used inconsistently.");
         }
     }
 }
