@@ -8,6 +8,7 @@ import deworetzki.stg.visitor.Visitor;
 
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static deworetzki.utils.CollectionUtils.union;
@@ -100,17 +101,23 @@ public final class Analysis implements Visitor<Set<Variable>> {
     @Override
     public Set<Variable> visit(LambdaForm lambda) {
         Set<Variable> freeVariables = withScope(lambda.parameters.iterator(), () -> lambda.body.accept(this));
-        freeVariables = without(freeVariables, lambda.parameters);
+        freeVariables = without(freeVariables, lambda.parameters); // Find variables that are free in lambda body.
 
-        if (lambda.freeVariables == null) {
+        if (lambda.freeVariables == null) { // If no free variables were given, set the inferred ones.
             lambda.freeVariables = List.copyOf(freeVariables);
         } else {
-            Set<Variable> missingFromFree = without(freeVariables, lambda.freeVariables);
+            // Find (and verify) the variables defined as free.
+            Set<Variable> definedFree = lambda.freeVariables.stream().map(this::visit)
+                    .flatMap(Set::stream).collect(Collectors.toSet());
+
+            // Missing from free are all variables, that are free in body, but are not defined as free and are not a global.
+            Set<Variable> missingFromFree = without(freeVariables, definedFree, globalVariables);
             if (!missingFromFree.isEmpty()) {
                 report(new ErrorMessage.UndeclaredFreeVariables(lambda, missingFromFree));
             }
 
-            Set<Variable> unnecessaryFree = without(lambda.freeVariables, freeVariables);
+            // Unnecessary free are variables defined as free that do not occur in the lambda body.
+            Set<Variable> unnecessaryFree = without(definedFree, freeVariables);
             if (!unnecessaryFree.isEmpty()) {
                 new WarningMessage.UnnecessaryFreeVariables(lambda, unnecessaryFree).report();
             }
