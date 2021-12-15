@@ -15,6 +15,12 @@ import static deworetzki.utils.CollectionUtils.union;
 import static deworetzki.utils.CollectionUtils.without;
 
 public final class Analysis implements Visitor<Set<Variable>> {
+    public static Analysis runOn(Program program, Options options) {
+        final Analysis analysis = new Analysis(options);
+        program.accept(analysis);
+        return analysis;
+    }
+
     private final Options options;
 
     public Analysis(Options options) {
@@ -72,7 +78,7 @@ public final class Analysis implements Visitor<Set<Variable>> {
     private void verifyConstructor(Constructor constructor, int argumentCount) {
         if (!options.isExtensionEnabled(Options.Extensions.ANALYZE_CONSTRUCTOR_ARGS)) return;
 
-        Integer detectedCount = detectedArgumentCounts.putIfAbsent(constructor, argumentCount);
+        int detectedCount = detectedArgumentCounts.putIfAbsent(constructor, argumentCount);
         if (detectedCount != argumentCount) {
             new WarningMessage.ConstructorArgsDiffer(constructor, argumentCount, detectedCount).report();
         }
@@ -108,7 +114,7 @@ public final class Analysis implements Visitor<Set<Variable>> {
         } else {
             // Find (and verify) the variables defined as free.
             Set<Variable> definedFree = lambda.freeVariables.stream().map(this::visit)
-                    .flatMap(Set::stream).collect(Collectors.toSet());
+                    .flatMap(Set::stream).collect(Collectors.toSet()); // TODO: Warn if there are duplicates in this list?
 
             // Missing from free are all variables, that are free in body, but are not defined as free and are not a global.
             Set<Variable> missingFromFree = without(freeVariables, definedFree, globalVariables);
@@ -207,15 +213,6 @@ public final class Analysis implements Visitor<Set<Variable>> {
         // Remove variables declared in alternative.
         freeVariables.removeAll(declaredInAlternative);
 
-        return freeVariables;
-    }
-
-    @Override
-    public Set<Variable> visit(Alternatives alternatives) {
-        Set<Variable> freeVariables = new HashSet<>();
-        for (Alternative alternative : alternatives) {
-            freeVariables.addAll(freeInAlternative(alternative));
-        }
         return freeVariables;
     }
 
