@@ -31,8 +31,8 @@ import java.util.Optional;
  *   12 | This is an example line.
  *      |    ^
  * </pre>
- * This method has a variant {@link Position#toAnsi(Ansi)} that uses the <i>jansi</i> library to color the output of
- * {@link Position#toLongString()}.
+ * This method has a variant {@link Position#toAnsi(Ansi, Ansi.Color)} that uses the <i>jansi</i> library to color
+ * the output of {@link Position#toLongString()}.
  * </p>
  */
 public record Position(Source source, int line, int column) {
