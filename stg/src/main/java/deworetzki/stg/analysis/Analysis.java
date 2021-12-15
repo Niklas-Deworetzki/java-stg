@@ -39,14 +39,14 @@ public final class Analysis implements Visitor<Set<Variable>> {
         return scopes.peekLast();
     }
 
-    private <V> V withScope(Iterator<Variable> variables, Supplier<V> action) {
+    private <V> V withScope(Collection<Variable> variables, Supplier<V> action) {
         final Set<Variable> scope = new HashSet<>();
 
-        variables.forEachRemaining(variable -> {
+        for (Variable variable : variables) {
             if (!scope.add(variable)) {
                 report(new ErrorMessage.Redeclaration(variable));
             }
-        });
+        }
 
         scopes.push(scope);
         final V result = action.get();
@@ -86,7 +86,7 @@ public final class Analysis implements Visitor<Set<Variable>> {
                 .forEach(globalVariables::add);
 
         for (Bind bind : program) {
-            withScope(globalVariables.iterator(), () -> bind.accept(this));
+            withScope(globalVariables, () -> bind.accept(this));
             reportedVariables.clear(); // Allow all variables to be reported during next global definition.
         }
         return null;
@@ -100,7 +100,7 @@ public final class Analysis implements Visitor<Set<Variable>> {
 
     @Override
     public Set<Variable> visit(LambdaForm lambda) {
-        Set<Variable> freeVariables = withScope(lambda.parameters.iterator(), () -> lambda.body.accept(this));
+        Set<Variable> freeVariables = withScope(lambda.parameters, () -> lambda.body.accept(this));
         freeVariables = without(freeVariables, lambda.parameters); // Find variables that are free in lambda body.
 
         if (lambda.freeVariables == null) { // If no free variables were given, set the inferred ones.
@@ -129,11 +129,11 @@ public final class Analysis implements Visitor<Set<Variable>> {
 
     @Override
     public Set<Variable> visit(LetBinding let) {
-        final Stream<Variable> variables = let.bindings.stream().map(bind -> bind.variable);
+        final List<Variable> variables = let.bindings.stream().map(bind -> bind.variable).collect(Collectors.toList());
         final Set<Variable> freeVariables = new HashSet<>();
 
         if (let.isRecursive) {
-            return withScope(variables.iterator(), () -> {
+            return withScope(variables, () -> {
                 for (Bind bind : let.bindings) {
                     freeVariables.addAll(bind.accept(this));
                 }
@@ -144,7 +144,7 @@ public final class Analysis implements Visitor<Set<Variable>> {
             for (Bind bind : let.bindings) {
                 freeVariables.addAll(bind.accept(this));
             }
-            return withScope(variables.iterator(), () -> {
+            return withScope(variables, () -> {
                 freeVariables.addAll(let.expression.accept(this));
                 return freeVariables;
             });
@@ -184,6 +184,15 @@ public final class Analysis implements Visitor<Set<Variable>> {
         return freeInApplication(application);
     }
 
+    @Override
+    public Set<Variable> visit(Alternatives alternatives) {
+        Set<Variable> freeVariables = new HashSet<>();
+        for (Alternative alternative : alternatives) {
+            freeVariables.addAll(freeInAlternative(alternative));
+        }
+        return freeVariables;
+    }
+
 
     private Set<Variable> freeInAlternative(Alternative alternative) {
         final Set<Variable> freeVariables = new HashSet<>();
@@ -191,7 +200,7 @@ public final class Analysis implements Visitor<Set<Variable>> {
         final Set<Variable> declaredInAlternative = alternative.accept(this);
         if (alternative.expression != null) {
             // Find free variables used in expression of alternative.
-            freeVariables.addAll(withScope(declaredInAlternative.iterator(), () ->
+            freeVariables.addAll(withScope(declaredInAlternative, () ->
                     alternative.expression.accept(this)));
         }
 
@@ -213,7 +222,7 @@ public final class Analysis implements Visitor<Set<Variable>> {
     @Override
     public Set<Variable> visit(AlgebraicAlternative alternative) {
         verifyConstructor(alternative.constructor, alternative.arguments.size());
-        return withScope(alternative.arguments.iterator(), this::currentScope);
+        return withScope(alternative.arguments, this::currentScope);
     }
 
 
