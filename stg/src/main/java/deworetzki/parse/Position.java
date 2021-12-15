@@ -206,7 +206,7 @@ public record Position(Source source, int line, int column) {
             ansi.fg(Ansi.Color.CYAN)
                     .a(createSourceLineEmptyPrefix(line))
                     .reset();
-            ansi.fg(Ansi.Color.RED).bold()
+            ansi.fg(arrowHighlightColor).bold()
                     .a(createArrowString(sourceLine.get(), column))
                     .reset();
         }
