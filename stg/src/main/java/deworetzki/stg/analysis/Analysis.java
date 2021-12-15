@@ -20,17 +20,16 @@ public final class Analysis implements Visitor<Set<Variable>> {
         this.options = options;
     }
 
-    private boolean reportedError = false;
+    private long reportedError = 0;
 
     private void report(final ErrorMessage errorMessage) {
-        reportedError = true;
+        reportedError += 1;
         errorMessage.report();
     }
 
     public boolean hasReportedErrors() {
-        return reportedError;
+        return reportedError != 0;
     }
-
 
     private final Deque<Set<Variable>> scopes = new ArrayDeque<>();
 
