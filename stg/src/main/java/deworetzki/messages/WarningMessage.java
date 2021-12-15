@@ -78,7 +78,7 @@ public abstract class WarningMessage implements CliMessage {
 
     public static class AmbiguousBoxedInteger extends WarningMessage {
         public AmbiguousBoxedInteger(Position position) {
-            super(position, "Ambiguous use of boxed literal in case. Did you meant to use a primitive or algebraic alternative?");
+            super(position, "Ambiguous use of boxed literal in case. Did you mean to use a primitive or algebraic alternative?");
             withExpected("Algebraic or primitive alternative");
         }
     }
