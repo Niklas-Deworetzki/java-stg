@@ -243,7 +243,7 @@ public final class Analysis implements Visitor<Set<Variable>> {
 
     @Override
     public Set<Variable> visit(Variable variable) {
-        if (!isDefined(variable)) {
+        if (!isDefined(variable) && !isFirstReport(variable)) {
             report(new ErrorMessage.UnknownVariable(variable, visibleVariables()));
         }
         return Set.of(variable);
