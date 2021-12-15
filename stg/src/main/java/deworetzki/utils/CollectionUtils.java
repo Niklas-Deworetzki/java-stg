@@ -82,38 +82,4 @@ public final class CollectionUtils {
         }
         return result;
     }
-
-    @SafeVarargs
-    public static <R> Iterator<R> flatten(Iterator<? extends R>... iterators) {
-        return new FlatteningIterator<>(iterators);
-    }
-
-    private final static class FlatteningIterator<R> implements Iterator<R> {
-        private final Queue<Iterator<? extends R>> iterators;
-
-        @SafeVarargs
-        public FlatteningIterator(Iterator<? extends R>... iterators) {
-            this.iterators = new ArrayDeque<>(iterators.length);
-            for (Iterator<? extends R> iterator : iterators) {
-                this.iterators.offer(iterator);
-            }
-        }
-
-        private void advance() {
-            while (!iterators.isEmpty() && !iterators.peek().hasNext())
-                iterators.poll();
-        }
-
-        @Override
-        public boolean hasNext() {
-            advance();
-            return !iterators.isEmpty();
-        }
-
-        @Override
-        public R next() {
-            advance();
-            return iterators.remove().next();
-        }
-    }
 }

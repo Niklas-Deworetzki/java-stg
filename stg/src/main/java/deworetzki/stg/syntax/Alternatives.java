@@ -3,10 +3,9 @@ package deworetzki.stg.syntax;
 import deworetzki.parse.Position;
 import deworetzki.stg.visitor.Visitor;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import static deworetzki.utils.CollectionUtils.flatten;
 
 public final class Alternatives extends Node implements Iterable<Alternative> {
     public final List<Alternative> alternatives; // TODO: Enforce homogeneity
@@ -20,7 +19,9 @@ public final class Alternatives extends Node implements Iterable<Alternative> {
 
     @Override
     public Iterator<Alternative> iterator() {
-        return flatten(alternatives.iterator(), List.of(defaultAlternative).iterator());
+        List<Alternative> elements = new ArrayList<>(alternatives);
+        elements.add(defaultAlternative);
+        return elements.iterator();
     }
 
     @Override
