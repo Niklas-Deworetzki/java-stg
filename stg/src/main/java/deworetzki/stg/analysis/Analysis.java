@@ -32,6 +32,7 @@ public final class Analysis implements Visitor<Set<Variable>> {
     }
 
     private final Deque<Set<Variable>> scopes = new ArrayDeque<>();
+    private final Set<Variable> reportedVariables = new HashSet<>();
 
     private Set<Variable> currentScope() {
         return scopes.peekLast();
@@ -61,6 +62,9 @@ public final class Analysis implements Visitor<Set<Variable>> {
         return scopes.stream().anyMatch(set -> set.contains(variable));
     }
 
+    private boolean isFirstReport(Variable variable) {
+        return reportedVariables.add(variable);
+    }
 
     private final Map<Constructor, Integer> detectedArgumentCounts = new HashMap<>();
 
@@ -73,13 +77,18 @@ public final class Analysis implements Visitor<Set<Variable>> {
         }
     }
 
+    private final Set<Variable> globalVariables = new HashSet<>();
+
     @Override
     public Set<Variable> visit(Program program) {
-        final Stream<Variable> variables = program.bindings.stream().map(bind -> bind.variable);
-        return withScope(variables.iterator(), () -> {
-            program.forEach(this);
-            return null;
-        });
+        program.bindings.stream().map(bind -> bind.variable)
+                .forEach(globalVariables::add);
+
+        for (Bind bind : program) {
+            withScope(globalVariables.iterator(), () -> bind.accept(this));
+            reportedVariables.clear(); // Allow all variables to be reported during next global definition.
+        }
+        return null;
     }
 
     @Override
