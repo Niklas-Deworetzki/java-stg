@@ -36,7 +36,7 @@ public final class Analysis implements Visitor<Set<Variable>> {
     private final Set<Variable> reportedVariables = new HashSet<>();
 
     private Set<Variable> currentScope() {
-        return scopes.peekLast();
+        return scopes.peekFirst();
     }
 
     private <V> V withScope(Collection<Variable> variables, Supplier<V> action) {
