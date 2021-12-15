@@ -139,6 +139,7 @@ public final class Analysis implements Visitor<Set<Variable>> {
         final Set<Variable> freeVariables = new HashSet<>();
 
         if (let.isRecursive) {
+            // Every bind can refer to every other. Therefore, we have to introduce them first and check then.
             return withScope(variables, () -> {
                 for (Bind bind : let.bindings) {
                     freeVariables.addAll(bind.accept(this));
@@ -199,7 +200,12 @@ public final class Analysis implements Visitor<Set<Variable>> {
         return freeVariables;
     }
 
-
+    /**
+     * @return The free variables within an {@link Alternative}.
+     * @implNote Note that this method uses the fact, that {@link Alternative Alternatives}
+     * do <b>not</b> return their free variables, but instead return the variables they define
+     * for the local scope of their expression.
+     */
     private Set<Variable> freeInAlternative(Alternative alternative) {
         final Set<Variable> freeVariables = new HashSet<>();
 
@@ -210,18 +216,20 @@ public final class Analysis implements Visitor<Set<Variable>> {
                     alternative.expression.accept(this)));
         }
 
-        // Remove variables declared in alternative.
+        // Variables that were declared in the alternatives scope, are not free.
         freeVariables.removeAll(declaredInAlternative);
 
         return freeVariables;
     }
 
+
+    // Alternatives return the Variables that they DEFINE for their local scope.
+
     @Override
     public Set<Variable> visit(AlgebraicAlternative alternative) {
         verifyConstructor(alternative.constructor, alternative.arguments.size());
-        return withScope(alternative.arguments, this::currentScope);
+        return withScope(alternative.arguments, this::currentScope); // Check for duplicate definitions and return scope.
     }
-
 
     @Override
     public Set<Variable> visit(DefaultBindingAlternative alternative) {
@@ -245,20 +253,23 @@ public final class Analysis implements Visitor<Set<Variable>> {
 
 
     @Override
-    public Set<Variable> visit(Constructor constructor) {
-        return null;
-    }
-
-    @Override
-    public Set<Variable> visit(Literal literal) {
-        return null;
-    }
-
-    @Override
     public Set<Variable> visit(Variable variable) {
         if (!isDefined(variable) && !isFirstReport(variable)) {
+            // Only report first occurrence of undefined variable.
             report(new ErrorMessage.UnknownVariable(variable, visibleVariables()));
         }
         return Set.of(variable);
     }
+
+
+    @Override
+    public Set<Variable> visit(Constructor constructor) {
+        throw new IllegalStateException("Method should not be called.");
+    }
+
+    @Override
+    public Set<Variable> visit(Literal literal) {
+        throw new IllegalStateException("Method should not be called.");
+    }
+
 }
