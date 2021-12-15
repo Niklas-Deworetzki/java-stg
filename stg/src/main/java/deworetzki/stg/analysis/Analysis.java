@@ -78,8 +78,8 @@ public final class Analysis implements Visitor<Set<Variable>> {
     private void verifyConstructor(Constructor constructor, int argumentCount) {
         if (!options.isExtensionEnabled(Options.Extensions.ANALYZE_CONSTRUCTOR_ARGS)) return;
 
-        int detectedCount = detectedArgumentCounts.putIfAbsent(constructor, argumentCount);
-        if (detectedCount != argumentCount) {
+        Integer detectedCount = detectedArgumentCounts.put(constructor, argumentCount);
+        if (detectedCount != null && detectedCount != argumentCount) {
             new WarningMessage.ConstructorArgsDiffer(constructor, argumentCount, detectedCount).report();
         }
     }
