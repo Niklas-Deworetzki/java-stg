@@ -238,17 +238,17 @@ public final class Analysis implements Visitor<Set<Variable>> {
 
     @Override
     public Set<Variable> visit(DefaultFallthroughAlternative alternative) {
-        return Set.of();
+        return Collections.emptySet();
     }
 
     @Override
     public Set<Variable> visit(NoAlternative noAlternative) {
-        return Set.of();
+        return Collections.emptySet();
     }
 
     @Override
     public Set<Variable> visit(PrimitiveAlternative alternative) {
-        return Set.of();
+        return Collections.emptySet();
     }
 
 
