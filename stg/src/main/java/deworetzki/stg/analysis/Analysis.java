@@ -261,14 +261,13 @@ public final class Analysis implements Visitor<Set<Variable>> {
         return Set.of(variable);
     }
 
-
     @Override
-    public Set<Variable> visit(Constructor constructor) {
-        throw new IllegalStateException("Method should not be called.");
+    public Set<Variable> visit(Literal literal) {
+        return Collections.emptySet();
     }
 
     @Override
-    public Set<Variable> visit(Literal literal) {
+    public Set<Variable> visit(Constructor constructor) {
         throw new IllegalStateException("Method should not be called.");
     }
 
