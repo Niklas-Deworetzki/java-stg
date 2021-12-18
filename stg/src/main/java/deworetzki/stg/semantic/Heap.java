@@ -1,28 +1,36 @@
 package deworetzki.stg.semantic;
 
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 /**
  * The {@link Heap} is a mapping from addresses to {@link Closure closures}.
  */
 public final class Heap {
-    private final SortedMap<Integer, Closure> contents = new TreeMap<>();
+    private final AtomicInteger highestUsed = new AtomicInteger();
+    private final Queue<Integer> freedAddresses = new ArrayDeque<>();
 
-    private int nextFreeAddress() {
-        return contents.lastKey() + 1;
+    private final Map<Integer, Closure> contents = new HashMap<>();
+
+    private synchronized Integer pollFreeAddress() {
+        Integer address = freedAddresses.poll();
+        if (address != null) return address;
+        return highestUsed.getAndIncrement();
     }
 
     public int allocate(Closure closure) {
-        final int nextFreeAddress = nextFreeAddress();
-        contents.put(nextFreeAddress, closure);
-        return nextFreeAddress;
+        final int address = pollFreeAddress();
+        contents.put(address, closure);
+        return address;
     }
 
     public Iterable<Integer> reserveMany(int n) {
-        final int nextFreeAddress = nextFreeAddress();
-        return () -> IntStream.range(nextFreeAddress, nextFreeAddress + n).iterator();
+        Integer[] reservedAddresses = new Integer[n];
+        for (int i = 0; i < n; i++) {
+            reservedAddresses[i] = pollFreeAddress();
+        }
+        return Arrays.asList(reservedAddresses);
     }
 
     public void update(int address, Closure closure) {
