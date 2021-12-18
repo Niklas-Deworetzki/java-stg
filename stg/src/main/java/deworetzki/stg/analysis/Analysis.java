@@ -94,8 +94,9 @@ public final class Analysis implements Visitor<Set<Variable>> {
 
     @Override
     public Set<Variable> visit(Program program) {
-        program.bindings.stream().map(bind -> bind.variable)
-                .forEach(globalVariables::add);
+        final List<Variable> listOfGlobalVariables = program.bindings.stream()
+                .map(bind -> bind.variable).collect(Collectors.toList());
+        withScope(listOfGlobalVariables, () -> globalVariables.addAll(currentScope()));
 
         boolean mainFound = false;
         for (Bind bind : program) {
