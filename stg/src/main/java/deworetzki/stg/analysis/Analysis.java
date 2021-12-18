@@ -86,15 +86,32 @@ public final class Analysis implements Visitor<Set<Variable>> {
 
     private final Set<Variable> globalVariables = new HashSet<>();
 
+    private void checkMain(LambdaForm mainLambda) {
+        if (!mainLambda.parameters.isEmpty()) {
+            report(new ErrorMessage.MainWithParameters(mainLambda));
+        }
+    }
+
     @Override
     public Set<Variable> visit(Program program) {
         program.bindings.stream().map(bind -> bind.variable)
                 .forEach(globalVariables::add);
 
+        boolean mainFound = false;
         for (Bind bind : program) {
+            if (bind.variable.name.equals("main")) {
+                mainFound = true;
+                checkMain(bind.lambda);
+            }
+
             withScope(globalVariables, () -> bind.accept(this));
             reportedVariables.clear(); // Allow all variables to be reported during next global definition.
         }
+
+        if (!mainFound) {
+            report(new ErrorMessage.MainMissing());
+        }
+
         return null;
     }
 
