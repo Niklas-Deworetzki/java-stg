@@ -143,4 +143,19 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
             // TODO: Add hint with similar name?
         }
     }
+
+    public static class MainMissing extends ErrorMessage {
+        public MainMissing() {
+            super(Position.NONE, "No entry point is defined for this program!");
+            withHint("Add a global definition 'main' without parameters.");
+        }
+    }
+
+    public static class MainWithParameters extends ErrorMessage {
+        public MainWithParameters(LambdaForm mainLambda) {
+            super(mainLambda.position, "Lambda form bound to main is not allowed to have parameters!");
+            withExpected("No parameters for lambda form.");
+            withActual(mainLambda.parameters.size() + " declared parameters.");
+        }
+    }
 }
