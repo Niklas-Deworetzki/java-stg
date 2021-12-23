@@ -96,7 +96,8 @@ public class Machine {
                     AlgebraicAlternative algebraicAlternative = (AlgebraicAlternative) alternative;
                     // Find matching alternative (if present) and exit early.
                     if (Constructor.areEqual(ret.constructor(), algebraicAlternative.constructor)) {
-                        // FIXME: Add bound variables from alternative to environment
+                        combineWith(algebraicAlternative.arguments.iterator(), ret.arguments().iterator(),
+                                continuation.savedEnvironment()::put);
                         code = new Code.Eval(algebraicAlternative.expression, continuation.savedEnvironment());
                         return;
                     }
