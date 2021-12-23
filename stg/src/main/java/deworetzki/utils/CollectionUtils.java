@@ -11,6 +11,19 @@ public final class CollectionUtils {
         throw new IllegalAccessException("No instances of this class are allowed!");
     }
 
+    public static <E> Set<E> duplicates(List<E> list) {
+        final Set<E> alreadyEncountered = new HashSet<>();
+        final Set<E> duplicates = new HashSet<>();
+
+        for (E element : list) {
+            if (!alreadyEncountered.add(element)) {
+                duplicates.add(element);
+            }
+        }
+
+        return duplicates;
+    }
+
     public static <E> List<E> take(int amount, final Deque<E> deque) {
         List<E> result = new ArrayList<>(amount);
         for (int i = 0; i < amount; i++) {

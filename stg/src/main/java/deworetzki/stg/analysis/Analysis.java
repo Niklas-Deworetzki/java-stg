@@ -12,8 +12,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static deworetzki.utils.CollectionUtils.union;
-import static deworetzki.utils.CollectionUtils.without;
+import static deworetzki.utils.CollectionUtils.*;
 
 public final class Analysis implements Visitor<Set<Variable>> {
     public static Analysis runOn(Program program, Options options) {
@@ -136,8 +135,12 @@ public final class Analysis implements Visitor<Set<Variable>> {
             lambda.freeVariables = List.copyOf(freeVariables);
         } else {
             // Find (and verify) the variables defined as free.
+            Set<Variable> duplicatesInFree = duplicates(lambda.freeVariables);
+            if (!duplicatesInFree.isEmpty()) {
+                new WarningMessage.UnnecessaryFreeVariables(lambda, duplicatesInFree);
+            }
             Set<Variable> definedFree = lambda.freeVariables.stream().map(this::visit)
-                    .flatMap(Set::stream).collect(Collectors.toSet()); // TODO: Warn if there are duplicates in this list?
+                    .flatMap(Set::stream).collect(Collectors.toSet());
 
             // Missing from free are all variables, that are free in body, but are not defined as free and are not a global.
             Set<Variable> missingFromFree = without(freeVariables, definedFree, globalVariables);
