@@ -1,5 +1,6 @@
 package deworetzki.stg.semantic;
 
+import deworetzki.messages.ErrorMessage;
 import deworetzki.stg.syntax.*;
 import deworetzki.stg.visitor.DefaultVisitor;
 
@@ -67,7 +68,9 @@ public class Machine {
 
             } else if (continuation.alternatives().defaultAlternative instanceof DefaultFallthroughAlternative def) {
                 code = new Code.Eval(def.expression, continuation.savedEnvironment());
-            } // TODO: NoAlternative. Error state
+            } else {
+                throw new ErrorMessage.NoMatchingAlternative(continuation.alternatives(), ret);
+            }
 
         } else if (code instanceof Code.ReturnInteger ret) {
             final Continuation continuation = returnStack.pop();
@@ -86,7 +89,9 @@ public class Machine {
                 code = new Code.Eval(def.expression, continuation.savedEnvironment());
             } else if (continuation.alternatives().defaultAlternative instanceof DefaultFallthroughAlternative def) {
                 code = new Code.Eval(def.expression, continuation.savedEnvironment());
-            }  // TODO: NoAlternative. Error state
+            } else {
+                throw new ErrorMessage.NoMatchingAlternative(continuation.alternatives(), ret);
+            }
         }
     }
 

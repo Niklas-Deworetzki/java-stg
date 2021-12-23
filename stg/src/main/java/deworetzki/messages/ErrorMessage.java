@@ -2,10 +2,8 @@ package deworetzki.messages;
 
 import deworetzki.parse.Position;
 import deworetzki.stg.Options;
-import deworetzki.stg.syntax.Application;
-import deworetzki.stg.syntax.LambdaForm;
-import deworetzki.stg.syntax.PrimitiveApplication;
-import deworetzki.stg.syntax.Variable;
+import deworetzki.stg.semantic.Code;
+import deworetzki.stg.syntax.*;
 import org.fusesource.jansi.Ansi;
 
 import java.io.IOException;
@@ -181,6 +179,18 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
             super(application.position, "Application uses a wrong amount of parameters.");
             withExpected(expectedParameterCount);
             withActual(application.arguments.size());
+        }
+    }
+
+
+    public static class NoMatchingAlternative extends ErrorMessage {
+        public NoMatchingAlternative(Alternatives alternatives, Code.ReturnConstructor ret) {
+            super(alternatives.position, "No alternative matches %s(%s).", ret.constructor(),
+                    ret.arguments().stream().map(String::valueOf).collect(Collectors.joining(" ")));
+        }
+
+        public NoMatchingAlternative(Alternatives alternatives, Code.ReturnInteger ret) {
+            super(alternatives.position, "No alternative matches primitive %d.", ret.integer());
         }
     }
 }
