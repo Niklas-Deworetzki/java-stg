@@ -62,7 +62,9 @@ public final class Main {
     }
 
     private static List<Bind> loadPrelude(final Options options) throws ErrorMessage {
-        return Collections.emptyList(); // TODO: Load from internal resource.
+        if (!options.loadPrelude()) return Collections.emptyList();
+        return loadInput(options, () -> new Source(null, "<builtin prelude>",
+                Main.class.getResourceAsStream("/Prelude.stg"), true));
     }
 
     private static List<Bind> loadInput(final Options options, final ResourceProvider<Source, IOException> resource) throws ErrorMessage {
