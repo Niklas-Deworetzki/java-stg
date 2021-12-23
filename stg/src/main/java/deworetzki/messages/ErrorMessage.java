@@ -193,4 +193,10 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
             super(alternatives.position, "No alternative matches primitive %d.", ret.integer());
         }
     }
+
+    public static class MixingAlternativeVariants extends ErrorMessage {
+        public MixingAlternativeVariants(Alternatives alternatives) {
+            super(alternatives.position, "Case expression combines algebraic and primitive alternatives.");
+        }
+    }
 }

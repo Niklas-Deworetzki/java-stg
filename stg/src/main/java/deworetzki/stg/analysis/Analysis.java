@@ -219,6 +219,15 @@ public final class Analysis implements Visitor<Set<Variable>> {
 
     @Override
     public Set<Variable> visit(Alternatives alternatives) {
+        if (!alternatives.alternatives.isEmpty()) {
+            final boolean isAlgebraic = alternatives.alternatives.get(0) instanceof AlgebraicAlternative;
+            for (Alternative alternative : alternatives.alternatives) {
+                if (alternative instanceof AlgebraicAlternative != isAlgebraic) {
+                    report(new ErrorMessage.MixingAlternativeVariants(alternatives));
+                }
+            }
+        }
+
         Set<Variable> freeVariables = new HashSet<>();
         for (Alternative alternative : alternatives) {
             freeVariables.addAll(freeInAlternative(alternative));
