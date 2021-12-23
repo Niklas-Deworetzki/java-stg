@@ -130,6 +130,15 @@ public class Machine {
         }
 
         @Override
+        public Code visit(PrimitiveApplication application) {
+            final int[] primitiveValues = values(localEnvironment, globalEnvironment, application.arguments).stream()
+                    .mapToInt(Value::getValue)
+                    .toArray();
+            final int result = application.getOperation().applyAsInt(primitiveValues);
+            return new Code.ReturnInteger(result);
+        }
+
+        @Override
         public Code visit(LetBinding let) {
             Map<Variable, Value> localEnvironment = allocateAll(heap, let.bindings, this.localEnvironment, let.isRecursive);
             return new Code.Eval(let.expression, localEnvironment);
