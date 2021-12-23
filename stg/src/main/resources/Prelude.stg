@@ -1,0 +1,86 @@
+
+// Manually define addition on non-primitive numbers
++ = \ x y -> case x {
+        of Int (kx) -> case y {
+            of Int (ky) -> case +# (kx ky) {
+                r -> Int (r)
+            }
+        }
+}
+
+// Use combinator to define other arithmetic operations.
+primitive-op = \ f ->
+    let function = \ x y -> case x {
+        of Int (kx) -> case y {
+            of Int (ky) -> case f (kx ky) {
+                r -> Int (r)
+            }
+        }
+    }
+    in function
+
+- = \ -> let function = \ x y -> -# (x y) in primitive-op (function)
+* = \ -> let function = \ x y -> *# (x y) in primitive-op (function)
+/ = \ -> let function = \ x y -> /# (x y) in primitive-op (function)
+
+== = \ x y -> case - (x y) {
+                of Int (r) -> case r {
+                    of 0# -> True
+                    default -> False
+                }
+              }
+
+if = \ c t f -> case c {
+                    of True -> t
+                    of False -> f
+                }
+
+nil = \ -> Nil
+
+cons = \ h t -> Cons (h t)
+
+head = \ xs -> case xs {
+    of Cons (h t) -> h
+}
+
+tail = \ xs -> case xs {
+    of Cons (h t) -> t
+}
+
+map = \ f xs -> case xs {
+            of Nil -> Nil
+            of Cons (y ys) -> let fy  = \ { f y } -> f (y)
+                                  mfy = \ { f ys } -> map (f ys)
+                              in Cons (fy mfy)
+}
+
+
+take = \ n xs -> case n {
+                    of Int (kn) -> case kn {
+                        of 0# -> Nil
+                        default -> case xs {
+                            of Nil -> Nil
+                            of Cons (h t) -> letrec n-1 = \ -> case -# (kn 1#) { a -> Int (a) }
+                                                    rem = \ -> take (n-1 t)
+                                             in Cons (h rem)
+                        }
+                    }
+                 }
+
+
+foldl = \ f z xs -> case xs {
+                        of Cons (h t) -> let z* = \ -> f (z h)
+                                         in foldl (f z* t)
+                        of Nil -> z
+                    }
+
+length = \ xs -> let one = \ -> Int (1#)
+                     zero = \ -> Int (0#)
+                 in let add1 = \ s ig -> + (s one)
+                 in foldl (add1 zero xs)
+
+sum = \ xs -> let zero = \ -> Int (0#)
+              in foldl (+ zero xs)
+
+product = \ xs -> let one = \ -> Int (1#)
+                  in foldl (* one xs)
