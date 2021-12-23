@@ -59,7 +59,7 @@ private List<Variable> noFreeVariablesGiven(Position position) {
 terminal LEFT, RIGHT;
 
 terminal LET, LETREC, IN;
-terminal MATCH, CASE, DEFAULT;
+terminal CASE, OF, DEFAULT;
 terminal EQ, LAMBDA, ARROW, U_ARROW, N_ARROW;
 terminal String VARIABLE, TYPE, PRIMITIVE;
 
@@ -161,7 +161,7 @@ LetBinding ::= LetIsRecursive:let Bindings:binds IN Expression:expr
                                                 {: RESULT = new LetBinding(position(letleft, letright), let, binds, expr); :}
              ;
 
-CaseExpression ::= MATCH:anchor Expression:expr LEFT Alternatives:alternatives RIGHT
+CaseExpression ::= CASE:anchor Expression:expr LEFT Alternatives:alternatives RIGHT
                                                 {: RESULT = new CaseExpression(position(anchorleft, anchorright), expr, alternatives); :}
                  ;
 
@@ -185,7 +185,7 @@ Alternatives ::= NonDefaultAlternatives:alts DefaultAlternative:def
                                                 {: RESULT = new Alternatives(position(altsleft, altsright), alts, def); :}
                ;
 
-NonDefaultAlternatives ::= CASE:anchor Alternative:head NonDefaultAlternatives:tail
+NonDefaultAlternatives ::= OF:anchor Alternative:head NonDefaultAlternatives:tail
                                                 {: RESULT = cons(head, tail); :}
                          | Epsilon
                                                 {: RESULT = nil(); :}
