@@ -15,15 +15,19 @@ import static java.util.Collections.emptyList;
 public class Machine {
     public static final Expression ENTRY_POINT = new FunctionApplication(new Variable("main"), emptyList());
 
-    private final Deque<Value> argumentStack = new LinkedList<>();
-    private final Deque<Continuation> returnStack = new LinkedList<>();
-    private final Deque<UpdateFrame> updateStack = new LinkedList<>();
     private final Heap heap = new Heap();
     private final Map<Variable, Value> globalEnvironment;
+
+    private static <A> Deque<A> emptyStack() {
+        return new LinkedList<>();
+    }
 
     // Initial State: Eval (main { })
     private Code code = new Code.Eval(ENTRY_POINT, Collections.emptyMap());
 
+    private Deque<Value> argumentStack = emptyStack();
+    private Deque<Continuation> returnStack = emptyStack();
+    private final Deque<UpdateFrame> updateStack = emptyStack();
 
     public Machine(Program program) {
         this.globalEnvironment = allocateAll(heap, program.bindings, Collections.emptyMap(), true);
