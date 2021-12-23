@@ -296,7 +296,7 @@ public final class Analysis implements Visitor<Set<Variable>> {
 
     @Override
     public Set<Variable> visit(Variable variable) {
-        if (!isDefined(variable) && !isFirstReport(variable)) {
+        if (!isDefined(variable) && isFirstReport(variable)) {
             // Only report first occurrence of undefined variable.
             report(new ErrorMessage.UnknownVariable(variable, visibleVariables()));
         }
