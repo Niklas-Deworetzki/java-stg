@@ -85,6 +85,10 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
         public InternalError(String message) {
             super(Position.NONE, message);
         }
+
+        public InternalError(Position position, String message) {
+            super(position, message);
+        }
     }
 
     public static class InputError extends ErrorMessage {

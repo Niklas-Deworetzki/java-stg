@@ -166,7 +166,7 @@ public class Machine {
                 return new Code.ReturnInteger(k.value());
             }
 
-            return null;
+            throw new ErrorMessage.InternalError(application.function.position, application.function + " is " + function);
         }
 
         @Override
