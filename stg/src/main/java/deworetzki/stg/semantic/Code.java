@@ -1,6 +1,5 @@
 package deworetzki.stg.semantic;
 
-import deworetzki.stg.syntax.Atom;
 import deworetzki.stg.syntax.Constructor;
 import deworetzki.stg.syntax.Expression;
 import deworetzki.stg.syntax.Variable;
