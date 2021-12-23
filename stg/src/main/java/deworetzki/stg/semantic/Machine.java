@@ -15,12 +15,14 @@ import static java.util.Collections.emptyList;
 public class Machine {
     public static final Expression ENTRY_POINT = new FunctionApplication(new Variable("main"), emptyList());
 
-    private Code code = new Code.Eval(ENTRY_POINT, Collections.emptyMap());
     private final Deque<Value> argumentStack = new LinkedList<>();
     private final Deque<Continuation> returnStack = new LinkedList<>();
     private final Deque<UpdateFrame> updateStack = new LinkedList<>();
     private final Heap heap = new Heap();
     private final Map<Variable, Value> globalEnvironment;
+
+    // Initial State: Eval (main { })
+    private Code code = new Code.Eval(ENTRY_POINT, Collections.emptyMap());
 
 
     public Machine(Program program) {
