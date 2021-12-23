@@ -2,6 +2,7 @@ package deworetzki.stg.analysis;
 
 import deworetzki.messages.ErrorMessage;
 import deworetzki.messages.WarningMessage;
+import deworetzki.stg.PrimitiveOperations;
 import deworetzki.stg.Options;
 import deworetzki.stg.syntax.*;
 import deworetzki.stg.visitor.Visitor;
@@ -205,7 +206,14 @@ public final class Analysis implements Visitor<Set<Variable>> {
 
     @Override
     public Set<Variable> visit(PrimitiveApplication application) {
-        // TODO: Check primitive operation.
+        PrimitiveOperations.getBuiltin(application.operation).ifPresentOrElse(
+                (primitiveOperation) -> {
+                    if (primitiveOperation.getExpectedParameterCount() != application.arguments.size()) {
+                        report(new ErrorMessage.ParameterMismatch(application, primitiveOperation.getExpectedParameterCount()));
+                    }
+                },
+                () -> report(new ErrorMessage.UnknownPrimitive(application))
+        );
         return freeInApplication(application);
     }
 

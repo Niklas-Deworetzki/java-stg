@@ -2,7 +2,9 @@ package deworetzki.messages;
 
 import deworetzki.parse.Position;
 import deworetzki.stg.Options;
+import deworetzki.stg.syntax.Application;
 import deworetzki.stg.syntax.LambdaForm;
+import deworetzki.stg.syntax.PrimitiveApplication;
 import deworetzki.stg.syntax.Variable;
 import org.fusesource.jansi.Ansi;
 
@@ -156,6 +158,21 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
             super(mainLambda.position, "Lambda form bound to main is not allowed to have parameters!");
             withExpected("No parameters for lambda form.");
             withActual(mainLambda.parameters.size() + " declared parameters.");
+        }
+    }
+
+    public static class UnknownPrimitive extends ErrorMessage {
+        public UnknownPrimitive(PrimitiveApplication application) {
+            super(application.position, "Unknown primitive '%s' is called.", application.operation);
+            // TODO: Add hint with similar name?
+        }
+    }
+
+    public static class ParameterMismatch extends ErrorMessage {
+        public ParameterMismatch(Application application, int expectedParameterCount) {
+            super(application.position, "Application uses a wrong amount of parameters.");
+            withExpected(expectedParameterCount);
+            withActual(application.arguments.size());
         }
     }
 }
