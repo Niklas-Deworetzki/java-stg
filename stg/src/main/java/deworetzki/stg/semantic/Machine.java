@@ -39,44 +39,77 @@ public class Machine {
 
         } else if (code instanceof Code.Enter enter) {
             Closure closure = heap.get(enter.address()); // TODO: Blackhole?
-            // TODO: length(as) >= length(xs) must be true?
-            // TODO: closure.code().isUpdateable == false
 
-            List<Value> arguments = take(closure.code().parameters.size(), argumentStack);
+            if (argumentStack.size() < closure.code().parameters.size()) {
+                final List<Variable> updatedParameters = new ArrayList<>(closure.code().parameters.subList(argumentStack.size(), closure.code().parameters.size()));
+                final List<Variable> updatedFreeVars = new ArrayList<>(closure.code().freeVariables);
+                updatedFreeVars.addAll(closure.code().parameters.subList(0, argumentStack.size()));
+                final List<Value> updatedBoundVals = new ArrayList<>(closure.capture());
+                updatedBoundVals.addAll(argumentStack);
 
-            final var localEnvironment = mkLocalEnv(
-                    closure.code().freeVariables, closure.capture(),
-                    closure.code().parameters, arguments);
-            code = new Code.Eval(closure.code().body, localEnvironment);
+                final UpdateFrame frame = updateStack.pop();
+                // Restore return stack and append restored argument stack.
+                returnStack = frame.returnStack();
+                argumentStack.addAll(frame.argumentStack());
 
-        } else if (code instanceof Code.ReturnConstructor ret) {
-            final Continuation continuation = returnStack.pop();
+                heap.update(frame.address(), new Closure(
+                        new LambdaForm(updatedFreeVars, false, updatedParameters, heap.get(frame.address()).code().body),
+                        updatedBoundVals
+                ));
 
-            for (Alternative alternative : continuation.alternatives().alternatives) {
-                AlgebraicAlternative algebraicAlternative = (AlgebraicAlternative) alternative;
-                // Find matching alternative (if present) and exit early.
-                if (Constructor.areEqual(ret.constructor(), algebraicAlternative.constructor)) {
-                    // FIXME: Add bound variables from alternative to environment
-                    code = new Code.Eval(algebraicAlternative.expression, continuation.savedEnvironment());
-                    return;
+            } else {
+                List<Value> arguments = take(closure.code().parameters.size(), argumentStack);
+
+                final var localEnvironment = mkLocalEnv(
+                        closure.code().freeVariables, closure.capture(),
+                        closure.code().parameters, arguments);
+
+                if (!closure.code().isUpdateable) {
+                    code = new Code.Eval(closure.code().body, localEnvironment);
+                } else {
+                    updateStack.push(new UpdateFrame(argumentStack, returnStack, enter.address()));
+                    argumentStack = emptyStack();
+                    returnStack = emptyStack();
+
+                    code = new Code.Eval(closure.code().body, localEnvironment);
                 }
             }
 
-            if (continuation.alternatives().defaultAlternative instanceof DefaultBindingAlternative def) {
-                // Build a closure that contains the returned constructor applied to its arguments.
-                List<Variable> arbitraryVariables = Variable.arbitrary(ret.arguments().size());
-                Closure boundClosure = new Closure(
-                        new LambdaForm(arbitraryVariables, false, emptyList(),
-                                new ConstructorApplication(ret.constructor(), arbitraryVariables)),
-                        ret.arguments());
+        } else if (code instanceof Code.ReturnConstructor ret) {
+            if (returnStack.isEmpty()) {
+                final UpdateFrame frame = updateStack.pop();
+                // Restore argument and return stack.
+                argumentStack = frame.argumentStack();
+                returnStack = frame.returnStack();
 
-                continuation.savedEnvironment().put(def.variable, new Address(heap.allocate(boundClosure)));
-                code = new Code.Eval(def.expression, continuation.savedEnvironment());
+                // Update address with a new closure
+                heap.update(frame.address(), standardConstructorClosure(ret));
 
-            } else if (continuation.alternatives().defaultAlternative instanceof DefaultFallthroughAlternative def) {
-                code = new Code.Eval(def.expression, continuation.savedEnvironment());
             } else {
-                throw new ErrorMessage.NoMatchingAlternative(continuation.alternatives(), ret);
+                final Continuation continuation = returnStack.pop();
+
+                for (Alternative alternative : continuation.alternatives().alternatives) {
+                    AlgebraicAlternative algebraicAlternative = (AlgebraicAlternative) alternative;
+                    // Find matching alternative (if present) and exit early.
+                    if (Constructor.areEqual(ret.constructor(), algebraicAlternative.constructor)) {
+                        // FIXME: Add bound variables from alternative to environment
+                        code = new Code.Eval(algebraicAlternative.expression, continuation.savedEnvironment());
+                        return;
+                    }
+                }
+
+                if (continuation.alternatives().defaultAlternative instanceof DefaultBindingAlternative def) {
+                    // Build a closure that contains the returned constructor applied to its arguments.
+                    Closure boundClosure = standardConstructorClosure(ret);
+
+                    continuation.savedEnvironment().put(def.variable, new Address(heap.allocate(boundClosure)));
+                    code = new Code.Eval(def.expression, continuation.savedEnvironment());
+
+                } else if (continuation.alternatives().defaultAlternative instanceof DefaultFallthroughAlternative def) {
+                    code = new Code.Eval(def.expression, continuation.savedEnvironment());
+                } else {
+                    throw new ErrorMessage.NoMatchingAlternative(continuation.alternatives(), ret);
+                }
             }
 
         } else if (code instanceof Code.ReturnInteger ret) {
@@ -228,5 +261,13 @@ public class Machine {
         combineWith(freeVariables, boundValues, localEnvironment::put);
         combineWith(parameters, arguments, localEnvironment::put);
         return localEnvironment;
+    }
+
+    private static Closure standardConstructorClosure(Code.ReturnConstructor ret) {
+        final List<Variable> constructorArguments = Variable.arbitrary(ret.arguments().size());
+        return new Closure(
+                new LambdaForm(constructorArguments, false, emptyList(), new ConstructorApplication(ret.constructor(), constructorArguments)),
+                ret.arguments()
+        );
     }
 }
