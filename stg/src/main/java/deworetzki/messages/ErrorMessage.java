@@ -115,6 +115,14 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
         }
     }
 
+    public static class ExpressionWithoutLambda extends ErrorMessage {
+        public ExpressionWithoutLambda(Position position) {
+            super(position, "Found an expression where a lambda was expected.");
+            withExpected("\\ { free variables } par1 ... parN -> Expression");
+            withHint(Options.Extensions.EXPRESSION_AS_LAMBDA.getHint());
+        }
+    }
+
     public static class SyntaxError extends ErrorMessage {
         public SyntaxError(Position position, Collection<String> expectedSymbols) {
             super(position, "Syntax error detected.");

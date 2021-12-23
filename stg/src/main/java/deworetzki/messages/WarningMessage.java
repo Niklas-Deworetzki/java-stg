@@ -1,6 +1,7 @@
 package deworetzki.messages;
 
 import deworetzki.parse.Position;
+import deworetzki.stg.Options;
 import deworetzki.stg.syntax.Constructor;
 import deworetzki.stg.syntax.LambdaForm;
 import deworetzki.stg.syntax.Variable;
@@ -88,6 +89,14 @@ public abstract class WarningMessage implements CliMessage {
             super(position, "Use of double arrow in case is not recommended. Cases are not updateable.");
             withExpected("Single arrow ( -> )");
             withActual("Double arrow ( => )");
+        }
+    }
+
+    public static class NoImplicitFreeVariablesAllowed extends WarningMessage {
+        public NoImplicitFreeVariablesAllowed(Position position) {
+            super(position, "A free variable list is missing. Assuming no free variables are present, since inferring them is not allowed.");
+            withExpected("A list of variables free in the lambda expression body: { free1 ... freeN }");
+            withHint(Options.Extensions.INFER_FREE_VARIABLES.getHint());
         }
     }
 

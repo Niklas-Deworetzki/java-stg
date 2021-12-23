@@ -46,6 +46,14 @@ private static <T> List<T> cons(T head, List<T> tail) {
 public boolean isExtensionEnabled(Extensions extension) {
     return options.isExtensionEnabled(extension);
 }
+
+private List<Variable> noFreeVariablesGiven(Position position) {
+    if (!isExtensionEnabled(Extensions.INFER_FREE_VARIABLES)) {
+        new WarningMessage.NoImplicitFreeVariablesAllowed(position).report();
+        return Collections.emptyList();
+    }
+    return null;
+}
 :}
 
 terminal LEFT, RIGHT;
@@ -124,7 +132,13 @@ Bind ::= VARIABLE:var EQ:anchor LambdaForm:lambda
 LambdaForm ::= LAMBDA:anchor LEFT Variables:free RIGHT Variables:args LambdaArrow:arrow Expression:expr
                                                 {: RESULT = new LambdaForm(position(anchorleft, anchorright), free, arrow, args, expr); :}
              | LAMBDA:anchor Variables:args LambdaArrow:arrow Expression:expr
-                                                {: RESULT = new LambdaForm(position(anchorleft, anchorright), null, arrow, args, expr); :}
+                                                {: RESULT = new LambdaForm(position(anchorleft, anchorright), noFreeVariablesGiven(position(anchorleft, anchorright)), arrow, args, expr); :}
+             | Expression:expr
+                                                {: if (!isExtensionEnabled(Extensions.EXPRESSION_AS_LAMBDA)) {
+                                                       throw new ErrorMessage.ExpressionWithoutLambda(expr.position);
+                                                   }
+                                                   RESULT = new LambdaForm(expr.position, noFreeVariablesGiven(expr.position), false, Collections.emptyList(), expr);
+                                                 :}
              ;
 
 //
