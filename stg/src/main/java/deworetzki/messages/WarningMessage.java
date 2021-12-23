@@ -84,14 +84,6 @@ public abstract class WarningMessage implements CliMessage {
         }
     }
 
-    public static class DoubleCaseArrow extends WarningMessage {
-        public DoubleCaseArrow(Position position) {
-            super(position, "Use of double arrow in case is not recommended. Cases are not updateable.");
-            withExpected("Single arrow ( -> )");
-            withActual("Double arrow ( => )");
-        }
-    }
-
     public static class NoImplicitFreeVariablesAllowed extends WarningMessage {
         public NoImplicitFreeVariablesAllowed(Position position) {
             super(position, "A free variable list is missing. Assuming no free variables are present, since inferring them is not allowed.");

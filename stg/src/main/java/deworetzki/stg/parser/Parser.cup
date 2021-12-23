@@ -60,7 +60,7 @@ terminal LEFT, RIGHT;
 
 terminal LET, LETREC, IN;
 terminal MATCH, CASE, DEFAULT;
-terminal EQ, LAMBDA, SINGLEARROW, DOUBLEARROW;
+terminal EQ, LAMBDA, ARROW, U_ARROW, N_ARROW;
 terminal String VARIABLE, TYPE, PRIMITIVE;
 
 terminal Integer INTLIT, INTBOX;
@@ -87,21 +87,15 @@ non terminal List<Variable> Variables;
 
 non terminal Boolean LetIsRecursive, LambdaArrow;
 non terminal Epsilon;
-non terminal CaseArrow;
 
 start with Bindings;
 
 
-CaseArrow ::= SINGLEARROW
-            | DOUBLEARROW:anchor
-                                                {: new WarningMessage.DoubleCaseArrow(position(anchorleft, anchorright))
-                                                    .report();
-                                                :}
-            ;
-
-LambdaArrow ::= SINGLEARROW
+LambdaArrow ::= ARROW
                                                 {: RESULT = false; :}
-              | DOUBLEARROW
+              | N_ARROW
+                                                {: RESULT = false; :}
+              | U_ARROW
                                                 {: RESULT = true; :}
               ;
 
@@ -197,19 +191,19 @@ NonDefaultAlternatives ::= CASE:anchor Alternative:head NonDefaultAlternatives:t
                                                 {: RESULT = nil(); :}
                          ;
 
-Alternative ::= Constructor:constr LEFT Variables:args RIGHT CaseArrow Expression:expr
+Alternative ::= Constructor:constr LEFT Variables:args RIGHT ARROW Expression:expr
                                                 {: RESULT = new AlgebraicAlternative(position(constrleft, constrright), constr, args, expr); :}
-              | Literal:literal CaseArrow Expression:expr
+              | Literal:literal ARROW Expression:expr
                                                 {: RESULT = new PrimitiveAlternative(position(literalleft, literalright), literal, expr); :}
-              | INTBOX:literal CaseArrow Expression:expr
+              | INTBOX:literal ARROW Expression:expr
                                                 {: new WarningMessage.AmbiguousBoxedInteger(position(literalleft, literalright)).report();
                                                    RESULT =  new PrimitiveAlternative(position(literalleft, literalright),
                                                         new Literal(position(literalleft, literalright), literal), expr);
                                                 :}
               ;
-DefaultAlternative ::= DEFAULT:anchor CaseArrow Expression:expr
+DefaultAlternative ::= DEFAULT:anchor ARROW Expression:expr
                                                 {: RESULT = new DefaultFallthroughAlternative(position(anchorleft, anchorright), expr); :}
-                     | Variable:binder CaseArrow Expression:expr
+                     | Variable:binder ARROW Expression:expr
                                                 {: RESULT = new DefaultBindingAlternative(position(binderleft, binderright), binder, expr); :}
                      | Epsilon:anchor
                                                 {: RESULT = new NoAlternative(position(anchorleft, anchorright)); :}

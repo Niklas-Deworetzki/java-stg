@@ -79,8 +79,9 @@ PrimitiveInteger = {BoxedInteger} "#"
 
 "="      { return symbol(EQ); }
 "\\"     { return symbol(LAMBDA); }
-"->"     { return symbol(SINGLEARROW); }
-"=>"     { return symbol(DOUBLEARROW); }
+"->"     { return symbol(ARROW); }
+"-u>"    { return symbol(U_ARROW); }
+"-n>"    { return symbol(N_ARROW); }
 
 {VariableName}   { return symbol(VARIABLE, yytext()); }
 {TypeName}       { return symbol(TYPE, yytext()); }
