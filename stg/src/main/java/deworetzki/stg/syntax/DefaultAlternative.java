@@ -5,7 +5,7 @@ import deworetzki.parse.Position;
 /**
  * Abstract superclass for the available {@link DefaultAlternative default alternatives}.
  */
-public abstract class DefaultAlternative extends Alternative {
+public abstract sealed class DefaultAlternative extends Alternative permits DefaultBindingAlternative, DefaultFallthroughAlternative, NoAlternative {
     public DefaultAlternative(Position position, Expression expression) {
         super(position, expression);
     }

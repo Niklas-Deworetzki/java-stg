@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class Node {
+public sealed abstract class Node permits Alternative, Alternatives, Bind, Constructor, Expression, LambdaForm, Program, Variable {
     public final Position position;
 
     public Node(Position position) {

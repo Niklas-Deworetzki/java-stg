@@ -12,7 +12,7 @@ import deworetzki.parse.Position;
  *  <li>{@link DefaultFallthroughAlternative default alternative without a name}</li>
  * </ul>
  */
-public abstract class Alternative extends Node {
+public sealed abstract class Alternative extends Node permits AlgebraicAlternative, DefaultAlternative, PrimitiveAlternative {
     public final Expression expression;
 
     public Alternative(Position position, Expression expression) {
