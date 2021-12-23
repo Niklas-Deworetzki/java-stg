@@ -33,6 +33,10 @@ public class Machine {
         this.globalEnvironment = allocateAll(heap, program.bindings, Collections.emptyMap(), true);
     }
 
+    public Code getCode() {
+        return code;
+    }
+
     public void step() {
         if (code instanceof Code.Eval eval) {
             code = eval.expression().accept(new Evaluator(eval.locals()));
