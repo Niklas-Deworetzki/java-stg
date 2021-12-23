@@ -25,6 +25,11 @@ public sealed interface Value {
         public int getValue() {
             return address;
         }
+
+        @Override
+        public String toString() {
+            return String.format("@%d", address);
+        }
     }
 
     /**
@@ -34,6 +39,11 @@ public sealed interface Value {
         @Override
         public int getValue() {
             return value;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%d#", value);
         }
     }
 
@@ -49,8 +59,8 @@ public sealed interface Value {
     }
 
     static List<Value> values(Map<Variable, Value> localEnvironment,
-                                 Map<Variable, Value> globalEnvironment,
-                                 List<? extends Atom> atoms) {
+                              Map<Variable, Value> globalEnvironment,
+                              List<? extends Atom> atoms) {
         return atoms.stream()
                 .map(atom -> value(localEnvironment, globalEnvironment, atom))
                 .collect(Collectors.toList());
