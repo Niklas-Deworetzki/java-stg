@@ -46,10 +46,11 @@ public class Machine {
         } else if (code instanceof Code.ReturnConstructor ret) {
             final Continuation continuation = returnStack.pop();
 
-            for (Alternative alternative : continuation.alternatives()) {
+            for (Alternative alternative : continuation.alternatives().alternatives) {
                 AlgebraicAlternative algebraicAlternative = (AlgebraicAlternative) alternative;
                 // Find matching alternative (if present) and exit early.
                 if (Constructor.areEqual(ret.constructor(), algebraicAlternative.constructor)) {
+                    // FIXME: Add bound variables from alternative to environment
                     code = new Code.Eval(algebraicAlternative.expression, continuation.savedEnvironment());
                     return;
                 }
@@ -75,7 +76,7 @@ public class Machine {
         } else if (code instanceof Code.ReturnInteger ret) {
             final Continuation continuation = returnStack.pop();
 
-            for (Alternative alternative : continuation.alternatives()) {
+            for (Alternative alternative : continuation.alternatives().alternatives) {
                 PrimitiveAlternative primitiveAlternative = (PrimitiveAlternative) alternative;
 
                 if (ret.integer() == primitiveAlternative.literal.value) {
