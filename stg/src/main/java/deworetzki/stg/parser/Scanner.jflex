@@ -65,10 +65,10 @@ PrimitiveInteger = {BoxedInteger} "#"
 {WhiteSpace}                         { /* Ignore whitespace */  }
 {Comment}                            { /* Ignore comments */ }
 
-"{"      { return symbol(LEFT); }
-"("      { return symbol(LEFT); }
-"}"      { return symbol(RIGHT); }
-")"      { return symbol(RIGHT); }
+"{"      { return symbol(LBRA); }
+"("      { return symbol(LPAR); }
+"}"      { return symbol(RBRA); }
+")"      { return symbol(RPAR); }
 
 "let"     { return symbol(LET); }
 "letrec"  { return symbol(LETREC); }
