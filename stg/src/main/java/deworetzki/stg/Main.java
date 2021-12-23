@@ -16,7 +16,12 @@ import java.util.*;
 
 public final class Main {
     public static void main(String[] args) {
-        final Options options = CommandLine.populateCommand(new Options(), args);
+        final Options options = new Options();
+        try {
+            CommandLine.populateCommand(options, args);
+        } catch (CommandLine.PicocliException ignored) {
+            options.isHelpRequested = true;
+        }
 
         if (options.shouldDisplayHelp()) {
             CommandLine.usage(options, System.out);

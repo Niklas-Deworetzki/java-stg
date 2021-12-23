@@ -58,14 +58,25 @@ public final class Options implements Iterable<ResourceProvider<Source, IOExcept
     }
 
     public enum Extensions {
-        ALLOW_NONPRIMITIVE_NUMBERS,
-        ANALYZE_CONSTRUCTOR_ARGS,
-        EXPRESSION_AS_LAMBDA,
-        INFER_FREE_VARIABLES;
+        ALLOW_NONPRIMITIVE_NUMBERS("nonprimitive-numbers"),
+        ANALYZE_CONSTRUCTOR_ARGS("check-constructors"),
+        INFER_FREE_VARIABLES("infer-free"),
+        EXPRESSION_AS_LAMBDA("expression-as-lambda");
+
+        private final String representation;
+
+        Extensions(String representation) {
+            this.representation = representation;
+        }
 
         public String getHint() {
-            return "Did you mean to enable the '" + this + "' extension?";
+            return "Did you mean to enable the '" + this + "' extension? (--enable " + this + ")";
+        }
+
+
+        @Override
+        public String toString() {
+            return representation;
         }
     }
-
 }

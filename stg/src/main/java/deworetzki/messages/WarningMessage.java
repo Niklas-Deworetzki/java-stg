@@ -95,7 +95,7 @@ public abstract class WarningMessage implements CliMessage {
     public static class NoImplicitFreeVariablesAllowed extends WarningMessage {
         public NoImplicitFreeVariablesAllowed(Position position) {
             super(position, "A free variable list is missing. Assuming no free variables are present, since inferring them is not allowed.");
-            withExpected("A list of variables free in the lambda expression body: { free1 ... freeN }");
+            withExpected("A list of variables free in the lambda expression body.");
             withHint(Options.Extensions.INFER_FREE_VARIABLES.getHint());
         }
     }
