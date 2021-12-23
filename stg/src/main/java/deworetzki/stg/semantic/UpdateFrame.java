@@ -1,5 +1,6 @@
 package deworetzki.stg.semantic;
 
-// TODO
-public interface UpdateFrame {
+import java.util.Deque;
+
+public record UpdateFrame(Deque<Value> argumentStack, Deque<Continuation> returnStack, int address) {
 }
