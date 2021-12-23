@@ -125,6 +125,10 @@ public final class Analysis implements Visitor<Set<Variable>> {
 
     @Override
     public Set<Variable> visit(LambdaForm lambda) {
+        if (lambda.isUpdateable && lambda.parameters.size() > 0) {
+            new WarningMessage.UpdateableLambdaWithParameters(lambda).report();
+        }
+
         Set<Variable> freeVariables = withScope(lambda.parameters, () -> lambda.body.accept(this));
         freeVariables = without(freeVariables, lambda.parameters); // Find variables that are free in lambda body.
 

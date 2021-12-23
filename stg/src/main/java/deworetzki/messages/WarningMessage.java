@@ -117,4 +117,10 @@ public abstract class WarningMessage implements CliMessage {
             withHint("It seems like '" + constructor.name + "' is used inconsistently.");
         }
     }
+
+    public static class UpdateableLambdaWithParameters extends WarningMessage {
+        public UpdateableLambdaWithParameters(LambdaForm lambda) {
+            super(lambda.position, "Updateable lambdas should not have parameters!");
+        }
+    }
 }
