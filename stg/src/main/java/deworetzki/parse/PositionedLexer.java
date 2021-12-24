@@ -3,6 +3,10 @@ package deworetzki.parse;
 import deworetzki.parse.symbol.RichSymbol;
 import java_cup.runtime.Symbol;
 
+/**
+ * A drop-in interface for the generated lexer, providing methods to
+ * create {@link Symbol} instances with the current {@link Position}.
+ */
 public interface PositionedLexer {
     Position currentPosition();
 

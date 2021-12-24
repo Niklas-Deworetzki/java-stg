@@ -14,7 +14,17 @@ import java.util.stream.Stream;
 
 import static deworetzki.utils.CollectionUtils.*;
 
+/**
+ * This class implements a single semantic analysis pass, that reports common
+ * errors in the input {@link Program}, warns for potential pitfalls and verifies
+ * (or infers) the free variables of {@link LambdaForm}.
+ */
 public final class Analysis implements Visitor<Set<Variable>> {
+
+    /**
+     * Runs the {@link Analysis} on the given input {@link Program}
+     * and returns the results.
+     */
     public static Analysis runOn(Program program, Options options) {
         final Analysis analysis = new Analysis(options);
         program.accept(analysis);
@@ -34,6 +44,9 @@ public final class Analysis implements Visitor<Set<Variable>> {
         errorMessage.report();
     }
 
+    /**
+     * Returns <code>true</code> if any errors have been reported during analysis.
+     */
     public boolean hasReportedErrors() {
         return reportedError != 0;
     }

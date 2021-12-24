@@ -10,6 +10,7 @@ import deworetzki.parse.Position;
  *  <li>{@link PrimitiveAlternative primitive alternatives}</li>
  *  <li>{@link DefaultBindingAlternative default alternative binding a name}</li>
  *  <li>{@link DefaultFallthroughAlternative default alternative without a name}</li>
+ *  <li>{@link NoAlternative place holder, if no alternative is present}</li>
  * </ul>
  */
 public sealed abstract class Alternative extends Node permits AlgebraicAlternative, DefaultAlternative, PrimitiveAlternative {

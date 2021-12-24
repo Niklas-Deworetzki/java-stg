@@ -7,6 +7,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * The root of the inheritance hierarchy for STG abstract syntax classes.
+ */
 public sealed abstract class Node permits Alternative, Alternatives, Bind, Constructor, Expression, LambdaForm, Program, Variable {
     public final Position position;
 

@@ -7,6 +7,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * A class grouping all {@link Alternative Alternatives} defined for a {@link CaseExpression}.
+ * <p>
+ * This class manages the given {@link AlgebraicAlternative} or {@link PrimitiveAlternative}
+ * instances, as well as a selected {@link DefaultAlternative}.
+ */
 public final class Alternatives extends Node implements Iterable<Alternative> {
     public final List<Alternative> alternatives;
     public final DefaultAlternative defaultAlternative;
