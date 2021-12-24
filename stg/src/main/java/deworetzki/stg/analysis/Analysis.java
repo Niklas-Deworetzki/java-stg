@@ -166,7 +166,7 @@ public final class Analysis implements Visitor<Set<Variable>> {
 
         if (let.isRecursive) {
             // Every bind can refer to every other. Therefore, we have to introduce them first and check then.
-            return withScope(variables, () -> {
+            withScope(variables, () -> {
                 for (Bind bind : let.bindings) {
                     freeVariables.addAll(bind.accept(this));
                 }
@@ -177,11 +177,14 @@ public final class Analysis implements Visitor<Set<Variable>> {
             for (Bind bind : let.bindings) {
                 freeVariables.addAll(bind.accept(this));
             }
-            return withScope(variables, () -> {
+            withScope(variables, () -> {
                 freeVariables.addAll(let.expression.accept(this));
                 return freeVariables;
             });
         }
+
+        freeVariables.removeAll(variables);
+        return freeVariables;
     }
 
     @Override
