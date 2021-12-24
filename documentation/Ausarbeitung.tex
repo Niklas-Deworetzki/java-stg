@@ -1,0 +1,258 @@
+% ----------------------------------------------------------------------------
+% Projektbericht
+% ----------------------------------------------------------------------------
+\documentclass[12pt]{report}
+
+% =======================================================
+\newcommand{\MyName}{Niklas Deworetzki}
+\newcommand{\MyTitle}{CS5341~--~Kernel-Architekturen in Programmiersprachen}
+\newcommand{\MyTopic}{The Spineless Tagless G-Machine}        % Thema (Unterüberschrift)
+% =======================================================
+
+\usepackage[english, ngerman]{babel} % Automatische Worttrennung
+\usepackage[babel]{csquotes}         % Anführungszeichen
+
+\usepackage[T1]{fontenc}             % Umlaute und Sonderzeichen
+\usepackage[utf8]{inputenc}          % für Eingabe und Ausgabe
+\usepackage{scrhack}                 % unterdrückt Fehlermeldung von listings
+\usepackage{parskip}
+
+\usepackage{amsmath}                 % Mathematik
+\usepackage{amssymb}                 % Mathematische Symbole
+\usepackage{graphicx}                % Grafiken
+\graphicspath{{images/}}             % Bilder werden aus images geladen
+\usepackage{longtable}               % Mehrseitige Tabellen
+\usepackage{wrapfig}                 % Text neben Figuren
+\usepackage{multicol}                % Mehrteilige Seiten
+
+% Formatierungen für Grafiken und Elemente.
+\usepackage[export]{adjustbox}
+\usepackage[a4paper]{geometry}
+\usepackage[titles,subfigure]{tocloft}
+\usepackage{float}
+
+% Formatierungen für Text, Überschriften, Inhaltsverzeichnis, etc.
+\usepackage{fancyhdr}
+\usepackage{tocbibind}
+\usepackage{blindtext}
+\usepackage{helvet}
+
+\usepackage[pdftex,
+pdfauthor={\MyName{}},
+pdftitle={\MyTitle{}~--~\MyTopic{}}]{hyperref}
+
+% BibLatex configuration
+\usepackage[backend=bibtex]{biblatex}
+\usepackage[toc,acronyms]{glossaries}
+\bibliography{bibliography.bib}     % Pfad zur Datei, die Referenzen enthält
+
+% Verschiedene Grafiken, Figuren, Listings
+\usepackage[table]{xcolor} % Definiere eigene Farben
+\usepackage{textcomp}      % Sonderzeichen (für Operatoren in Code, z.B.)
+\usepackage{subfigure}     % Teilfiguren
+\usepackage{filecontents}  % Lade Dateien (für Codebeispiele)
+\usepackage{listingsutf8}  % Codeblöcke mit UTF-8 (Umlaute)
+\usepackage{lstautogobble} % Entfernt führende Leerzeichen in Codeblöcken
+% lstautogobble=false zum deaktivieren für einzelne Codeblöcke
+
+% Grafikbibliothek zum Erstellen eigener Diagramme
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing,shapes,arrows,positioning}
+
+
+%------------------------------------------------------------------------------
+% THM Farbdefinitionen
+\definecolor{cdmain1}{RGB}{128, 186, 36}
+\definecolor{cdmain2}{RGB}{74, 92, 102}
+\definecolor{cdhighlight1}{RGB}{156, 19, 46}
+\definecolor{cdhighlight2}{RGB}{244, 170, 0}
+\definecolor{cdhighlight3}{RGB}{0, 184, 228}
+\definecolor{cdhighlight4}{RGB}{0, 40, 120}
+%------------------------------------------------------------------------------
+\colorlet{fontcolor}{cdmain2}
+\colorlet{headercolor}{cdmain1}
+%------------------------------------------------------------------------------
+% Schrift für Fußnoten
+\renewcommand{\footnotesize}{\fontsize{10pt}{12pt}\selectfont}
+%------------------------------------------------------------------------------
+% Format für Tabellen
+\newcommand\HeaderCell[1]{%
+  \multicolumn{1}{c}{\cellcolor{cdmain2}\textcolor{white}{#1}}
+}
+%------------------------------------------------------------------------------
+% Farbdefinitionen für Codeblöcke
+\colorlet{codecomment}{cdmain1}
+\colorlet{codenormal}{cdmain2}
+\colorlet{codelblue}{cdhighlight3}
+\colorlet{codekeyword}{cdhighlight1}
+\definecolor{backcolor}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{codestyle}{
+  backgroundcolor=\color{backcolor},
+  commentstyle=\color{codecomment},
+  keywordstyle=\color{codekeyword},
+  numberstyle=\tiny\color{codenormal},
+  stringstyle=\color{codelblue},
+  basicstyle=\ttfamily\footnotesize,
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  keepspaces=true,
+  numbers=left,
+  numbersep=5pt,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=2,
+  frame=single
+}
+\lstset{style=codestyle}
+%------------------------------------------------------------------------------
+\makeatletter
+\def\@makechapterhead#1{%
+  \vspace*{50\p@}%
+  {\parindent \z@ \raggedright \normalfont
+    \interlinepenalty\@M
+    \Huge\bfseries  \thechapter\quad #1\par\nobreak
+    \vskip 40\p@
+}}
+\makeatother
+\renewcommand*\cftchapnumwidth{2em}
+\renewcommand*\cftsecnumwidth{3em}
+%------------------------------------------------------------------------------
+\makeglossaries{}
+\makeatletter
+\newcommand \Dotfill {\leavevmode \cleaders \hb@xt@ .8em{\hss .\hss }\hfill \kern \z@}
+\makeatother
+\renewcommand*\glspostdescription{\Dotfill}
+\include{glossary}
+%------------------------------------------------------------------------------
+% Redefine the fancy page style
+%\fancypagestyle{fancy}{
+\fancyhf{}
+\fancyhead[R]{\thepage}
+%\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+%}
+
+\setlength{\headheight}{20mm}
+
+% Redefine the plain page style
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyhead[R]{\thepage}%
+  \renewcommand{\headrulewidth}{0pt}% Line at the header invisible
+  \renewcommand{\footrulewidth}{0pt}% Line at the footer visible
+}
+
+% ------------------------------------------------------------------------------
+
+
+%------------------------------------------------------------------------------
+% Zeilenumbrüche in Links
+\expandafter\def\expandafter\UrlBreaks\expandafter{\UrlBreaks\do\-\do\\/}
+% Zeilenumbrüche bei Unterstrichen (in langen Variablennamen)
+\renewcommand\_{\textunderscore\allowbreak}
+
+\newcommand\cn[1]{\textcolor{red}{\textsuperscript{[citation needed]}}}
+% ------------------------------------------------------------------------------
+
+
+
+% Offizielles Farbschema für Schrift verwenden:
+% \color{fontcolor} % Macht Schrift blass
+
+
+%==============================================================================
+\begin{document}
+% front matter
+\pagestyle{empty}
+%\newgeometry{left=40mm,right=15mm,top=30mm,bottom=20mm}
+\pagenumbering{Roman}
+
+
+\begin{titlepage}
+  \begin{center}
+    \begin{figure}
+      % THM Logo
+      \includegraphics[width=.9\textwidth]{LOGO_THM_CG_FB06}
+    \end{figure}
+  \end{center}
+  % Title
+  \Large
+  \begin{center}
+    \vspace{1cm}
+    \textbf{\MyTitle{}}\linebreak
+    \vspace{1cm}
+  \end{center}
+  \large
+  Thema:\\
+  \textbf{\MyTopic{}}
+
+  \normalsize
+  \vfill
+  % \begin{tabular*}{\textwidth}[t]{l,c,l}
+  \begin{center}
+    \begin{tabular*}{0.75\textwidth}%
+      {@{\extracolsep{\fill}}ll}
+
+      {Vorgelegt von:} & {\MyName{}}\\
+      {Matrikelnummer} & {5185551}\\
+      {} & {}\\
+      {} & {}\\
+      {Eingereicht bei} & {}\\
+      {Hochschulbetreuer/-in:} & {Prof.\ Dr.-Ing.\ Dominikus\ Herzberg}\\
+      {} & {}\\
+      {} & {}\\
+      {Eingereicht am:} & {\today}
+
+    \end{tabular*}
+  \end{center}
+
+  \vfill
+\end{titlepage}
+%==============================================================================
+
+\addtocounter{page}{1}
+\pagestyle{fancy}
+
+\tableofcontents
+
+\newcounter{savepage}
+\setcounter{savepage}{\number\value{page}}
+\newpage
+
+%==============================================================================
+
+% main matter
+\pagenumbering{arabic}
+
+
+\input{chapters/01-introduction}
+\input{chapters/02-stg-language}
+\input{chapters/03-implementation}
+\input{chapters/04-results}
+
+
+%==============================================================================
+
+% end matter
+\pagenumbering{Roman}
+\addtocounter{savepage}{1}
+\setcounter{page}{\value{savepage}}
+
+% list of tables and figures
+\listoffigures
+
+% Bibliography
+\printbibliography[heading=bibintoc, title=Literaturverzeichnis]{}
+
+% Appendices
+\appendix
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

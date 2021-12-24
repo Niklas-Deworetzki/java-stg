@@ -1,0 +1,71 @@
+
+\chapter{Einleitung}
+
+Funktionale Programmiersprachen: Deklarativ \& Funktionen höherer Ordnung.
+Ziel sollte sein, Ausdrucksstärke unabhängig von Ausführung zu ermöglichen.
+In der Praxis orientiert sich Programmierer an weiteren Eigenschaften: Stil, Bibliotheken, Wartbarkeit, Besonders Performance
+
+Eigenschaften stehen im Konflikt zu Deklarativer Programmierung.
+Funktionen höherer Ordnung auf normaler Hardware nur mit Overhead.
+Ebenso schränkt Endlichkeit von Computern Ausdrucksstärke ein.
+Folgen wie Fibonacci, Natürliche Zahlen, ... sind unendlich.
+Computer besitzen jedoch nur begrenzt Speicher.
+
+In Haskell sollen beide Probleme gelöst werden.
+Beides durch die gleiche Technik, welche das Ausführungsmodell beschreibt.
+Dabei handelt es sich um STG \cn{STG Paper}
+
+STG ist seit ??? \cn{} wesentlicher Bestandteil von Haskell und im Übersetzungsprozess integriert.
+Im Ergebnis ist Laufzeit häufig vergleichbar mit C, jedoch auf weit höheren Abstraktionsebene.
+
+
+\section{Graphenreduktion als Ausführungsmodell}
+
+Wie funktioniert STG?
+Vergleich zu anderen Ausführungsmodellen von abstrakten Maschinen, die Instruktionen nacheinander Ausführen (RAM, Stackmaschine JVM, Turing-Maschine) ist Modell näher an Lambda-Kalkül, wo Reduktionsschritte durchgeführt werden.
+Das Programm als Graph wird schrittweise reduziert, bis Ergebnis vorliegt.
+
+% TODO: Beispiel Graph für Beispiel Programm
+
+Darstellung unterscheidet nicht mehr zwischen Funktionen und Werten, alles sind Closures.
+Unterscheidung zwischen Wert und Thunk \cn{Gibt es eine Erklärung hier?}
+Endlose Graphen dennoch problematisch.
+Hierfür wird zu Normalform ausgewertet (standardtechnik).
+WHNF zählt als ausgewerteter Ausdruck.
+
+% TODO: WHNF erklären
+
+Gemeinsam kann sowohl Lazy-Evaluation als auch Funktionen höherer Ordnung problemlos ausgewertet werden.
+Genaue Umsetzung des Modells in Kapitel 2\cn{referenz}.
+
+
+\section{Erweiterung STG}
+
+G-Machine steht für Maschine basierend auf Graphenreduktion.
+Ebenfalls wird in WHNF ausgewertet.
+Welche Änderungen macht S und T?
+
+Es handelt sich um Optimierungen.
+Erste Graphenmaschinen waren nicht sehr performant, zielten auf besondere Hardware ab (LISP-Maschinen, G-Maschine).
+Graph als komplexe Datenstruktur muss dargestellt werden.
+Naive Darstellung ist mit Overhead und Speicherverbrauch verbunden.
+Ebenfalls muss unterscheidung zwischen Wert und Thunk getroffen werden.
+Hierfür wurden Tags herangezogen, die Closures markieren.
+
+STG lässt beides weg, um effizienter zu sein.
+Spineless beschreibt ohne Graphen (Spine).
+Stattdessen wird über Sprünge im Code oder Zeiger auf dem Heap verwiesen.
+Tagless bedeutet keine Tags, stattdessen einheitliche Darstellung der Closure, angelehnt an OOP/VTables.
+
+% TODO: Graphik einheitliche Closure darstellungen.
+
+Darum auch keine Unterscheidung zwischen Wert und Thunk. Alles in Closures.
+Auswertung einer Closure wird immer als Entern der Closure bezeichnet, Sprung zu Code dieser.
+Code wertet aus oder gibt Ergebniswert zurück.
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../Ausarbeitung"
+%%% End:
