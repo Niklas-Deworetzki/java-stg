@@ -6,7 +6,8 @@ import deworetzki.stg.syntax.Program;
 
 public record StgRuntime(Options options) {
 
-    public void run(final Program program) {
+    // TODO
+    public void analyzeAndRun(final Program program) {
         Analysis analysis = Analysis.runOn(program, options);
         if (!analysis.hasReportedErrors()) {
             final Machine machine = new Machine(program);
