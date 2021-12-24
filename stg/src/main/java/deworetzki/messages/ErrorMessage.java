@@ -12,7 +12,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static deworetzki.messages.MessageUtils.stringRepresentation;
 
@@ -150,9 +149,8 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
     }
 
     public static class UnknownVariable extends ErrorMessage {
-        public UnknownVariable(Variable variable, Stream<Variable> scope) {
+        public UnknownVariable(Variable variable) {
             super(variable.position, "Unknown variable '%s' encountered.", variable.name);
-            // TODO: Add hint with similar name?
         }
     }
 
@@ -174,7 +172,6 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
     public static class UnknownPrimitive extends ErrorMessage {
         public UnknownPrimitive(PrimitiveApplication application) {
             super(application.position, "Unknown primitive '%s' is called.", application.operation);
-            // TODO: Add hint with similar name?
         }
     }
 

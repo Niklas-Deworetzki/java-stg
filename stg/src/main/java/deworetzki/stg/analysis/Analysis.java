@@ -2,15 +2,14 @@ package deworetzki.stg.analysis;
 
 import deworetzki.messages.ErrorMessage;
 import deworetzki.messages.WarningMessage;
-import deworetzki.stg.PrimitiveOperations;
 import deworetzki.stg.Options;
+import deworetzki.stg.PrimitiveOperations;
 import deworetzki.stg.syntax.*;
 import deworetzki.stg.visitor.Visitor;
 
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static deworetzki.utils.CollectionUtils.*;
 
@@ -72,10 +71,6 @@ public final class Analysis implements Visitor<Set<Variable>> {
         scopes.pop();
 
         return result;
-    }
-
-    private Stream<Variable> visibleVariables() {
-        return scopes.stream().flatMap(Set::stream);
     }
 
     private boolean isDefined(Variable variable) {
@@ -314,7 +309,7 @@ public final class Analysis implements Visitor<Set<Variable>> {
     public Set<Variable> visit(Variable variable) {
         if (!isDefined(variable) && isFirstReport(variable)) {
             // Only report first occurrence of undefined variable.
-            report(new ErrorMessage.UnknownVariable(variable, visibleVariables()));
+            report(new ErrorMessage.UnknownVariable(variable));
         }
         return Set.of(variable);
     }
