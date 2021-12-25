@@ -1,68 +1,33 @@
 
 \chapter{Einleitung}
 
-Funktionale Programmiersprachen: Deklarativ \& Funktionen höherer Ordnung.
-Ziel sollte sein, Ausdrucksstärke unabhängig von Ausführung zu ermöglichen.
-In der Praxis orientiert sich Programmierer an weiteren Eigenschaften: Stil, Bibliotheken, Wartbarkeit, Besonders Performance
+Diese Ausarbeitung ist Teil der Dokumentation eines Projektes aus dem Modul \textit{CS5341~--~Kernel-Architekturen in Programmiersprachen}, welches im Wintersemester 2021/2022 stattfand.
 
-Eigenschaften stehen im Konflikt zu Deklarativer Programmierung.
-Funktionen höherer Ordnung auf normaler Hardware nur mit Overhead.
-Ebenso schränkt Endlichkeit von Computern Ausdrucksstärke ein.
-Folgen wie Fibonacci, Natürliche Zahlen, ... sind unendlich.
-Computer besitzen jedoch nur begrenzt Speicher.
+Wie der Name es bereits verrät, liegt der Fokus der Veranstaltung auf Programmiersprachen mit einem kleinen Sprachkern, sogenannte \textit{Kernel-Sprachen}.
+Diese Sprachen besitzen zumeist die Möglichkeit, sich mit eigenen Mitteln selbst zu erweitern, um so Schicht für Schicht höhere Abstraktionen aufzubauen, ohne diese explizit bei der Implementierung der Sprache zu unterstützen.
+Das macht diese Sprachen nicht nur bei der Implementierung interessant, da die Implementierung eines kleinen Sprachkerns nur mit vergleichsweise geringem Aufwand verbunden ist.
+Auch für Anwender sind solche Sprachen interessant, da sie zumeist flexibel sind, über Bibliotheken einfach erweitert werden können und die geringe Zahl der Kernfeatures ein schnelles Erlernen fördert.
+Bekannte Vertreter für Kernelsprachen sind die verschiedenen Lisp-Dialekte, welche im Sprachkern lediglich Listen, Funktionen und Funktionsanwendungen bieten, während die restliche Funktionalität über Markomechanismen oder reflexive Programmierung entstehen.
+Funktionale Sprachen wie Haskell oder Scala wandeln Quellprogramme mit komplexeren Bestandteil in eine kalkülartige Kernsprache um, welche für Analysen im Compiler und die Ausführung herangezogen werden.
+Bei den objektorientierten Programmiersprachen ist Smalltalk als wichtiger Vertreter zu nennen.
+Hier werden alle Sprachkonstrukte als Objekte dargestellt, welche sich Nachrichten senden können.
 
-In Haskell sollen beide Probleme gelöst werden.
-Beides durch die gleiche Technik, welche das Ausführungsmodell beschreibt.
-Dabei handelt es sich um STG \cn{STG Paper}
+Während in den seminaristischen Vorlesungsstunden der Veranstaltung der Fokus zumeist auf den Mechanismen liegt, die in solchen Programmiersprachen verwendet werden, liegt der Fokus dieses Projektes in der Auseinandersetzung mit einem Programmiersprachenkern und besonders auf dem Ausführungsmodell, das diesem zugrunde liegt.
+Die sogenannte \textit{STG-Sprache} wird verwendet, um eine Ausführungsumgebung für Haskell bereitzustellen, weswegen die Sprache nicht auf hoher Flexibilität und Erweiterbarkeit sondern vielmehr auf Maschinennähe und Kontrolle der ausgeführten Operationen zur Laufzeit basiert.
+Die Besonderheiten dieser Programmiersprache wurden im Rahmen des Projektes untersucht und eine Implementierung der dazugehörigen Maschine in der imperativen Programmiersprache Java erstellt.
 
-STG ist seit ??? \cn{} wesentlicher Bestandteil von Haskell und im Übersetzungsprozess integriert.
-Im Ergebnis ist Laufzeit häufig vergleichbar mit C, jedoch auf weit höheren Abstraktionsebene.
+Diese Ausarbeitung ist in vier weitere Teile gegliedert, welche die verschiedenen Abschnitte des Projektes widerspiegeln.
 
+\begin{itemize}
+\item Kapitel~\ref{chap:grundlagen} befasst sich mit den Grundlagen hinter der \textit{STG-Sprache} und der dazugehörigen Maschine.
 
-\section{Graphenreduktion als Ausführungsmodell}
+\item Kapitel~\ref{chap:stg} beschreibt die definierten Sprachkonstrukte und deren Bedeutung zur Ausführungszeit.
 
-Wie funktioniert STG?
-Vergleich zu anderen Ausführungsmodellen von abstrakten Maschinen, die Instruktionen nacheinander Ausführen (RAM, Stackmaschine JVM, Turing-Maschine) ist Modell näher an Lambda-Kalkül, wo Reduktionsschritte durchgeführt werden.
-Das Programm als Graph wird schrittweise reduziert, bis Ergebnis vorliegt.
+\item Kapitel~\ref{chap:implementierung} assoziiert die einzelnen Sprachkonstrukte mit der zugehörigen Semantik sowie der Implementierung dieser für eine virtuelle Maschine in Java.
 
-% TODO: Beispiel Graph für Beispiel Programm
+\item Kapitel~\ref{chap:ergebnisse} fasst die Ergebnisse des Projektes zusammen und reflektiert diese.
 
-Darstellung unterscheidet nicht mehr zwischen Funktionen und Werten, alles sind Closures.
-Unterscheidung zwischen Wert und Thunk \cn{Gibt es eine Erklärung hier?}
-Endlose Graphen dennoch problematisch.
-Hierfür wird zu Normalform ausgewertet (standardtechnik).
-WHNF zählt als ausgewerteter Ausdruck.
-
-% TODO: WHNF erklären
-
-Gemeinsam kann sowohl Lazy-Evaluation als auch Funktionen höherer Ordnung problemlos ausgewertet werden.
-Genaue Umsetzung des Modells in Kapitel 2\cn{referenz}.
-
-
-\section{Erweiterung STG}
-
-G-Machine steht für Maschine basierend auf Graphenreduktion.
-Ebenfalls wird in WHNF ausgewertet.
-Welche Änderungen macht S und T?
-
-Es handelt sich um Optimierungen.
-Erste Graphenmaschinen waren nicht sehr performant, zielten auf besondere Hardware ab (LISP-Maschinen, G-Maschine).
-Graph als komplexe Datenstruktur muss dargestellt werden.
-Naive Darstellung ist mit Overhead und Speicherverbrauch verbunden.
-Ebenfalls muss unterscheidung zwischen Wert und Thunk getroffen werden.
-Hierfür wurden Tags herangezogen, die Closures markieren.
-
-STG lässt beides weg, um effizienter zu sein.
-Spineless beschreibt ohne Graphen (Spine).
-Stattdessen wird über Sprünge im Code oder Zeiger auf dem Heap verwiesen.
-Tagless bedeutet keine Tags, stattdessen einheitliche Darstellung der Closure, angelehnt an OOP/VTables.
-
-% TODO: Graphik einheitliche Closure darstellungen.
-
-Darum auch keine Unterscheidung zwischen Wert und Thunk. Alles in Closures.
-Auswertung einer Closure wird immer als Entern der Closure bezeichnet, Sprung zu Code dieser.
-Code wertet aus oder gibt Ergebniswert zurück.
-
+\end{itemize}
 
 
 %%% Local Variables:

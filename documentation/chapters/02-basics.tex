@@ -1,0 +1,68 @@
+
+\chapter{Grundlagen}\label{chap:grundlagen}
+
+STG beschreibt sowohl eine abstrakte Maschine als auch eine kleine Programmiersprache, die zur Programmierung ebendieser Maschine verwendet wird.
+Der vorwiegende Verwendungszweck liegt dabei in der Übersetzung und Ausführung von nicht-strikten funktionalen Programmiersprachen.
+In solchen Programmiersprachen werden Ausdrücke verzögert und nur bei Bedarf ausgewertet.
+Man spricht auch von der sogenannten \textit{Bedarfsauswertung} oder aus dem Englischen \textit{lazy Evaluation}.
+
+Dieser Ausführungsmodus kommt mit einer Reihe an großen Herausforderungen, welche die effiziente praktische Umsetzung betreffen.
+Zur Laufzeit muss zwischen ausstehenden oder unterbrochenen Auswertungen und bereits berechneten Werten unterschieden werden.
+Gleichzeitig soll überflüssige Arbeit vermieden werden, indem Ausdrücke nur so oft wie nötig ausgewertet werden, um anschließend deren Wert für den Falle erneuter Auswertung zu speichern.
+Zudem ist es in funktionalen Sprachen häufig der Fall, dass Ausdrücke nicht nur einfache Werte sondern auch Funktionen berechnen, welche dann auf Argumente angewandt, an andere Funktionen übergeben oder an Namen gebunden werden.
+Selbstverständlich soll eine Ausführungsumgebung, die all diese Anforderungen unterstützt, auch noch möglichst effizient sein und mit möglichst wenig Speicherbedarf und Rechenzeit auskommen.
+
+Die STG-Maschine verspricht, als abstrakte Maschine diesen Anforderungen zu entsprechen und wird seit ???\cn{Datum herausfinden} als  wesentlicher Bestandteil in der Implementierung und Übersetzung von Haskell verwendet.
+Im Ergebnis ist Performance von übersetzten Haskell Programmen häufig vergleichbar mit C.\cn{}
+
+
+\section{Graphenreduktion als Ausführungsmodell}
+
+Wie funktioniert STG?
+Vergleich zu anderen Ausführungsmodellen von abstrakten Maschinen, die Instruktionen nacheinander Ausführen (RAM, Stackmaschine JVM, Turing-Maschine) ist Modell näher an Lambda-Kalkül, wo Reduktionsschritte durchgeführt werden.
+Das Programm als Graph wird schrittweise reduziert, bis Ergebnis vorliegt.
+
+% TODO: Beispiel Graph für Beispiel Programm
+
+Darstellung unterscheidet nicht mehr zwischen Funktionen und Werten, alles sind Closures.
+Unterscheidung zwischen Wert und Thunk \cn{Gibt es eine Erklärung hier?}
+Endlose Graphen dennoch problematisch.
+Hierfür wird zu Normalform ausgewertet (standardtechnik).
+WHNF zählt als ausgewerteter Ausdruck.
+
+% TODO: WHNF erklären
+
+Gemeinsam kann sowohl Lazy-Evaluation als auch Funktionen höherer Ordnung problemlos ausgewertet werden.
+Genaue Umsetzung des Modells in Kapitel 2\cn{referenz}.
+
+
+\section{Erweiterung STG}
+
+G-Machine steht für Maschine basierend auf Graphenreduktion.
+Ebenfalls wird in WHNF ausgewertet.
+Welche Änderungen macht S und T?
+
+Es handelt sich um Optimierungen.
+Erste Graphenmaschinen waren nicht sehr performant, zielten auf besondere Hardware ab (LISP-Maschinen, G-Maschine).
+Graph als komplexe Datenstruktur muss dargestellt werden.
+Naive Darstellung ist mit Overhead und Speicherverbrauch verbunden.
+Ebenfalls muss unterscheidung zwischen Wert und Thunk getroffen werden.
+Hierfür wurden Tags herangezogen, die Closures markieren.
+
+STG lässt beides weg, um effizienter zu sein.
+Spineless beschreibt ohne Graphen (Spine).
+Stattdessen wird über Sprünge im Code oder Zeiger auf dem Heap verwiesen.
+Tagless bedeutet keine Tags, stattdessen einheitliche Darstellung der Closure, angelehnt an OOP/VTables.
+
+% TODO: Graphik einheitliche Closure darstellungen.
+
+Darum auch keine Unterscheidung zwischen Wert und Thunk. Alles in Closures.
+Auswertung einer Closure wird immer als Entern der Closure bezeichnet, Sprung zu Code dieser.
+Code wertet aus oder gibt Ergebniswert zurück.
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../Ausarbeitung"
+%%% End:
