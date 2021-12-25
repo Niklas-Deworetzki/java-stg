@@ -39,7 +39,6 @@ public class Machine {
     }
 
 
-
     /**
      * The {@link Machine machine state} can take on different forms, that describe
      * how the next state can be reached.
@@ -71,7 +70,7 @@ public class Machine {
             Closure closure = machine.heap.get(address); // TODO: Blackhole?
 
             if (machine.argumentStack.size() < closure.code().parameters.size()) {
-                // Not enough arguments, to enter the closure. We encountered an update.
+                // Not enough arguments to enter the closure. We encountered an update.
                 final List<Variable> updatedParameters = new ArrayList<>(closure.code().parameters.subList(machine.argumentStack.size(), closure.code().parameters.size()));
                 final List<Variable> updatedFreeVars = new ArrayList<>(closure.code().freeVariables);
                 updatedFreeVars.addAll(closure.code().parameters.subList(0, machine.argumentStack.size()));
