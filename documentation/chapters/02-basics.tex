@@ -1,13 +1,13 @@
 
 \chapter{Grundlagen}\label{chap:grundlagen}
 
-STG beschreibt sowohl eine abstrakte Maschine als auch eine kleine Programmiersprache, die zur Programmierung ebendieser Maschine verwendet wird.
+Die \textit{Spineless Tagless G-Machine} (STG) beschreibt eine abstrakte Maschine, sowie eine kleine Programmiersprache zur Programmierung ebendieser Maschine, die als STG-Sprache bezeichnet wird.
 Der vorwiegende Verwendungszweck liegt dabei in der Übersetzung und Ausführung von nicht-strikten funktionalen Programmiersprachen.
 In solchen Programmiersprachen werden Ausdrücke verzögert und nur bei Bedarf ausgewertet.
 Man spricht auch von der sogenannten \textit{Bedarfsauswertung} oder aus dem Englischen \textit{lazy Evaluation}.
 
 Dieser Ausführungsmodus kommt mit einer Reihe an großen Herausforderungen, welche die effiziente praktische Umsetzung betreffen.
-Zur Laufzeit muss zwischen ausstehenden oder unterbrochenen Auswertungen und bereits berechneten Werten unterschieden werden.
+Zur Laufzeit muss zwischen ausstehenden oder unterbrochenen Auswertungen (sogenannten \textit{Thunks}) und bereits berechneten Werten unterschieden werden.
 Gleichzeitig soll überflüssige Arbeit vermieden werden, indem Ausdrücke nur so oft wie nötig ausgewertet werden, um anschließend deren Wert für den Falle erneuter Auswertung zu speichern.
 Zudem ist es in funktionalen Sprachen häufig der Fall, dass Ausdrücke nicht nur einfache Werte sondern auch Funktionen berechnen, welche dann auf Argumente angewandt, an andere Funktionen übergeben oder an Namen gebunden werden.
 Selbstverständlich soll eine Ausführungsumgebung, die all diese Anforderungen unterstützt, auch noch möglichst effizient sein und mit möglichst wenig Speicherbedarf und Rechenzeit auskommen.
@@ -18,19 +18,35 @@ Im Ergebnis ist Performance von übersetzten Haskell Programmen häufig vergleic
 
 \section{Graphenreduktion als Ausführungsmodell}
 
-Wie funktioniert STG?
-Vergleich zu anderen Ausführungsmodellen von abstrakten Maschinen, die Instruktionen nacheinander Ausführen (RAM, Stackmaschine JVM, Turing-Maschine) ist Modell näher an Lambda-Kalkül, wo Reduktionsschritte durchgeführt werden.
-Das Programm als Graph wird schrittweise reduziert, bis Ergebnis vorliegt.
+Die Verwendung einer abstrakten Maschine zur Ausführung einer Programmiersprache ist keine Besonderheit.
+Mittlerweile existiert eine Vielzahl an Sprachen, die sich die JVM zu Nutze machen, die ursprünglich für Java entworfen wurde.
+In der Microsoft-Welt gibt es CLI. % TODO: Kurzsätze
+LLVM als Zielplattform verschiedener Sprachen.
+
+All diese Modelle sind nah an dem Modell der handelsüblichen Computer, welche auch mit der RAM Einzug in die theoretische Welt der Berechenbarkeit gehalten haben.
+Die STG-Maschine wählt hier einen anderen Ansatz, der näher am Berechnungsvorgehen des Lambda-Kalküls ist:
+Hier liegt das Programm als Datenstruktur vor, in der Ausdrücke als Knoten mit Kanten zu den verwendeten Teilausdrücken vorkommen.
+Reduktionsregeln geben vor, wie schrittweise diese Datenstruktur reduziert werden kann, bis der ausgewertete Ausdruck schließlich eine sogenannte Normalform erreicht~--~eine einheitliche Form des Ausdrucks, die dessen ausgewerteten Wert repräsentiert.
+
+G-Machine in STG steht dabei für \textit{Graphenreduktionsmaschine}.
+Das auszuwertende Programm liegt also in der STG als Graph vor, der schrittweise reduziert wird.
+Die Darstellung als Graph beschreibt dabei das Programm genauer in Hinsicht auf die Laufzeitsemantik als es durch einen Baum möglich ist.
+Darum wird diese Darstellung der klassischen Repräsentation als Syntaxbaum vorgezogen\cn{Syntaxbaum}.
 
 % TODO: Beispiel Graph für Beispiel Programm
+In Beispiel ??? wird deutlich, welche Vorteile die Darstellung als Baum bietet.
 
-Darstellung unterscheidet nicht mehr zwischen Funktionen und Werten, alles sind Closures.
-Unterscheidung zwischen Wert und Thunk \cn{Gibt es eine Erklärung hier?}
+
+Die Darstellung eines Programms und dessen Ausdrücke als Knoten in einem Graph vereinheitlicht die verschiedenen Ausprägungen von Werten.
+Für die Darstellung des Programms ist es nun egal, ob ein ausgewerteter Wert oder Thunk vorliegt, beide sind Knoten im Graphen und unterliegen den Reduktionsregeln.
+Ist eine Unterscheidung zwischen diesen Arten von Werten nötig, so obliegt es den Reduktionsregeln, diese zu treffen.
+
+% TODO: WHNF erklären
+
 Endlose Graphen dennoch problematisch.
 Hierfür wird zu Normalform ausgewertet (standardtechnik).
 WHNF zählt als ausgewerteter Ausdruck.
 
-% TODO: WHNF erklären
 
 Gemeinsam kann sowohl Lazy-Evaluation als auch Funktionen höherer Ordnung problemlos ausgewertet werden.
 Genaue Umsetzung des Modells in Kapitel 2\cn{referenz}.
