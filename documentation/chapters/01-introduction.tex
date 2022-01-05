@@ -3,12 +3,12 @@
 
 Diese Ausarbeitung ist Teil der Dokumentation eines Projektes aus dem Modul \textit{CS5341~--~Kernel-Architekturen in Programmiersprachen}, welches im Wintersemester 2021/2022 stattfand.
 
-Wie der Name es bereits verrät, liegt der Fokus der Veranstaltung auf Programmiersprachen mit einem kleinen Sprachkern, sogenannte \textit{Kernel-Sprachen}.
+Wie der Name es bereits verrät, liegt der Fokus der Veranstaltung auf Programmiersprachen mit einem kleinen Sprachkern, sogenannten \textit{Kernel-Sprachen}.
 Diese Sprachen besitzen zumeist die Möglichkeit, sich mit eigenen Mitteln selbst zu erweitern, um so Schicht für Schicht höhere Abstraktionen aufzubauen, ohne diese explizit bei der Implementierung der Sprache zu unterstützen.
 Das macht diese Sprachen nicht nur bei der Implementierung interessant, da die Implementierung eines kleinen Sprachkerns nur mit vergleichsweise geringem Aufwand verbunden ist.
 Auch für Anwender sind solche Sprachen interessant, da sie zumeist flexibel sind, über Bibliotheken einfach erweitert werden können und die geringe Zahl der Kernfeatures ein schnelles Erlernen fördert.
-Bekannte Vertreter für Kernelsprachen sind die verschiedenen Lisp-Dialekte, welche im Sprachkern lediglich Listen, Funktionen und Funktionsanwendungen bieten, während die restliche Funktionalität über Markomechanismen oder reflexive Programmierung entstehen.
-Funktionale Sprachen wie Haskell oder Scala wandeln Quellprogramme mit komplexeren Bestandteil in eine kalkülartige Kernsprache um, welche für Analysen im Compiler und die Ausführung herangezogen werden.
+Bekannte Vertreter für Kernelsprachen sind die verschiedenen Lisp-Dialekte, welche im Sprachkern lediglich Listen, Funktionen und Funktionsanwendungen bieten, während die restliche Funktionalität über Makromechanismen oder reflexive Programmierung entstehen.
+Funktionale Sprachen wie Haskell oder Scala wandeln Quellprogramme mit komplexeren Bestandteil in eine kalkülartige Kernsprache um, welche für Analysen im Compiler und die Ausführung herangezogen wird.
 Bei den objektorientierten Programmiersprachen ist Smalltalk als wichtiger Vertreter zu nennen.
 Hier werden alle Sprachkonstrukte als Objekte dargestellt, welche sich Nachrichten senden können.
 
@@ -21,7 +21,7 @@ Diese Ausarbeitung ist in vier weitere Teile gegliedert, welche die verschiedene
 \begin{itemize}
 \item Kapitel~\ref{chap:grundlagen} befasst sich mit den Grundlagen hinter der STG-Sprache und der dazugehörigen Maschine.
 
-\item Kapitel~\ref{chap:stg} beschreibt die definierten Sprachkonstrukte und deren Bedeutung zur Ausführungszeit.
+\item Kapitel~\ref{chap:stg} beschreibt die für die Sprache definierten Sprachkonstrukte und deren Bedeutung zur Ausführungszeit.
 
 \item Kapitel~\ref{chap:implementierung} assoziiert die einzelnen Sprachkonstrukte mit der zugehörigen Semantik sowie der Implementierung dieser für eine virtuelle Maschine in Java.
 
