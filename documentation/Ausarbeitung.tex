@@ -91,15 +91,12 @@ pdftitle={\MyTitle{}~--~\MyTopic{}}]{hyperref}
   backgroundcolor=\color{backcolor},
   commentstyle=\color{codecomment},
   keywordstyle=\color{codekeyword},
-  numberstyle=\tiny\color{codenormal},
   stringstyle=\color{codelblue},
-  basicstyle=\ttfamily\footnotesize,
+  basicstyle=\ttfamily\small,
   breakatwhitespace=false,
   breaklines=true,
   captionpos=b,
   keepspaces=true,
-  numbers=left,
-  numbersep=5pt,
   showspaces=false,
   showstringspaces=false,
   showtabs=false,
@@ -107,6 +104,7 @@ pdftitle={\MyTitle{}~--~\MyTopic{}}]{hyperref}
   frame=single
 }
 \lstset{style=codestyle}
+\lstset{aboveskip=1em}
 %------------------------------------------------------------------------------
 \makeatletter
 \def\@makechapterhead#1{%
