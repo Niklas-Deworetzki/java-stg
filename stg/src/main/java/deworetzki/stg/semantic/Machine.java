@@ -126,7 +126,7 @@ public class Machine {
             }
 
             if (continuation.alternatives().defaultAlternative instanceof DefaultBindingAlternative def) {
-                continuation.savedEnvironment().put(def.variable, new UnboxedInt(ret.integer()));
+                continuation.savedEnvironment().put(def.variable, new Int(ret.integer()));
                 code = new Code.Eval(def.expression, continuation.savedEnvironment());
             } else if (continuation.alternatives().defaultAlternative instanceof DefaultFallthroughAlternative def) {
                 code = new Code.Eval(def.expression, continuation.savedEnvironment());
@@ -162,7 +162,7 @@ public class Machine {
 
                 // Enter the closure of the function.
                 return new Code.Enter(a.address());
-            } else if (function instanceof UnboxedInt k) {
+            } else if (function instanceof Int k) {
                 return new Code.ReturnInteger(k.value());
             }
 

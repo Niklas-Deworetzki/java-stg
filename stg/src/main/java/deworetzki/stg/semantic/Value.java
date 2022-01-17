@@ -35,7 +35,7 @@ public sealed interface Value {
     /**
      * A primitive integer value.
      */
-    record UnboxedInt(int value) implements Value {
+    record Int(int value) implements Value {
         @Override
         public int getValue() {
             return value;
@@ -52,7 +52,7 @@ public sealed interface Value {
                        Map<Variable, Value> globalEnvironment,
                        Atom atom) {
         if (atom instanceof Literal literal) {
-            return new UnboxedInt(literal.value);
+            return new Int(literal.value);
         } else {
             return getValue(localEnvironment, globalEnvironment, (Variable) atom);
         }
