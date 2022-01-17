@@ -36,6 +36,7 @@
 \usepackage{tocbibind}
 \usepackage{blindtext}
 \usepackage{helvet}
+\usepackage[lighttt]{lmodern}
 
 \usepackage[pdftex,
 pdfauthor={\MyName{}},
@@ -80,32 +81,25 @@ pdftitle={\MyTitle{}~--~\MyTopic{}}]{hyperref}
   \multicolumn{1}{c}{\cellcolor{cdmain2}\textcolor{white}{#1}}
 }
 %------------------------------------------------------------------------------
-% Farbdefinitionen für Codeblöcke
-\colorlet{codecomment}{cdmain1}
-\colorlet{codenormal}{cdmain2}
-\colorlet{codelblue}{cdhighlight3}
-\colorlet{codekeyword}{cdhighlight1}
-\definecolor{backcolor}{rgb}{0.95,0.95,0.92}
 
 \lstdefinestyle{codestyle}{
-  backgroundcolor=\color{backcolor},
-  commentstyle=\color{codecomment},
-  keywordstyle=\color{codekeyword},
-  stringstyle=\color{codelblue},
+  commentstyle=\itshape,
+  keywordstyle=\bfseries,
   basicstyle=\ttfamily\small,
   breakatwhitespace=false,
   breaklines=true,
-  captionpos=b,
   keepspaces=true,
   showspaces=false,
   showstringspaces=false,
   showtabs=false,
   tabsize=2,
-  frame=single
+  frame=none,
+  aboveskip=1em,
+  belowskip=1em
 }
 \lstset{style=codestyle}
-\lstset{aboveskip=1em}
-%------------------------------------------------------------------------------
+
+% ------------------------------------------------------------------------------
 \makeatletter
 \def\@makechapterhead#1{%
   \vspace*{50\p@}%

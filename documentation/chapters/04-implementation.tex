@@ -1,6 +1,76 @@
 
 \chapter{Implementierung}\label{chap:implementierung}
 
+Das Kernziel des Projektes ist es, die formale Notation der operationellen Semantik in eine ausführbare Implementierung umzuwandeln.
+Die Wahl der Implementierungssprache fällt hier auf Java, eine imperative und objektorientierte Programmiersprache.
+Als Notation zur Beschreibung der Semantik werden in \cn{STG} Zustandsübergänge gewählt, welche in Schreibweise einer Funktion auf bestimmte Muster des Maschinenzustands greifen und auf den nächsten Zustand der Ausführung abbilden.
+Diese Notation kann nicht ohne Weiteres in eine imperative Programmiersprache wie Java übersetzt werden.
+Doch genau hier liegt der Reiz des Projektes, da die \gls{stg} genau für diesen Zweck gedacht ist, die semantische Lücke zwischen verzögert ausgewerteten funktionalen Hochsprachen und dem hardwarenahen imperativen Ausführungsmodell herkömmlicher Hardware zu schließen.
+Zwar wird Java kaum als hardwarenahe Programmiersprache verwendet, die imperativen Eigenschaften sind jedoch vorhanden und Features wie Objektorientierung und automatische Speicherverwaltung unterstützen die zielgerichtete Implementierung.
+
+\section{Der Maschinenzustand}
+
+Der Zustand der \gls{stg}-Maschine besteht aus insgesamt fünf Komponenten, die in Java abgebildet werden:
+
+\begin{enumerate}
+\item Der \textit{Maschinencode}, welcher eine feste Anzahl an Ausprägungen annehmen kann,
+\item der \textit{Argument-Stack}, welcher Werte enthält,
+\item der \textit{Return-Stack}, welcher \textit{Continuations} speichert,
+\item der \textit{Update-Stack}, welcher Informationen zur Ersetzung von Closures speichert, und
+\item der \textit{Heap}, welcher die Closures speichert.
+\end{enumerate}
+
+Zudem existiert eine statische, globale Umgebung, welche die Adressen für alle Closures liefert, die auf oberster Programmebene definiert sind.
+Diese Umgebung ist jedoch während der gesamten Laufzeit nicht verändert.
+
+Die drei verschiedenen Stacks werden als \texttt{Deque} aus dem Paket \texttt{java.util} dargestellt.
+Für die Elemente, die diese Stacks speichern, werden verschiedene Klassen angelegt, um die einzelnen Ausprägungen darzustellen.
+Continuations und die Informationen zur Ersetzung von Closures (genannt Update-Frame) werden jeweils als Records in Java dargestellt.
+
+Für Werte, die auf dem Argument-Stack liegen, existieren zwei Ausprägungen: Ganzzahlen und Adressen.
+Es wird für beide jeweils ein Record erstellt, welcher einer gemeinsame Schnittstelle implementiert.
+
+\begin{lstlisting}[language=java, morekeywords={record, sealed}, caption={Darstellung von Werten in Java}, label={lst:value}]
+public sealed interface Value {
+  record Address(int address) implements Value {}
+
+  record Int(int value) implements Value {}
+}
+\end{lstlisting}
+
+Ähnlich wird bei den Ausprägungen des Maschinencodes vorgegangen.
+Hier existieren insgesamt vier Ausprägungen: \textbf{Eval}, \textbf{Enter}, \textbf{Return Constructor} und \textbf{Return Integer}.
+
+
+\begin{lstlisting}[language=java, morekeywords={record, sealed}, caption={Darstellung der Ausprägungen des Maschinencodes in Java}, label={lst:code}]
+public sealed interface Code {
+  record Eval(Expression expression,
+    Map<Variable, Value> locals) implements Code {}
+
+  record Enter(int address) implements Code {}
+
+  record ReturnConstructor(Constructor constructor,
+    List<Value> arguments) implements Code {}
+
+  record ReturnInteger(int integer) implements Code {}
+}
+\end{lstlisting}
+
+
+\section{Voraussetzungen zur Auswertung}
+
+Funktion val
+
+Der Startzustand
+
+
+\section{Funktionsanwendungen}
+
+
+\section{Namensbindungen}
+
+
+\section{Fallunterscheidungen}
 
 
 
