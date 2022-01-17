@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import static deworetzki.stg.semantic.Value.*;
 import static deworetzki.utils.CollectionUtils.combineWith;
 import static deworetzki.utils.CollectionUtils.take;
-import static java.util.Collections.emptyList;
+import static java.util.Collections.*;
 
 public class Machine {
     public static final Expression ENTRY_POINT = new FunctionApplication(new Variable("main"), emptyList());
@@ -24,14 +24,14 @@ public class Machine {
     }
 
     // Initial State: Eval (main { })
-    private State state = new Eval(ENTRY_POINT, Collections.emptyMap());
+    private State state = new Eval(ENTRY_POINT, emptyMap());
 
     private Deque<Value> argumentStack = emptyStack();
     private Deque<Continuation> returnStack = emptyStack();
     private final Deque<UpdateFrame> updateStack = emptyStack();
 
     public Machine(Program program) {
-        this.globalEnvironment = allocateAll(heap, program.bindings, Collections.emptyMap(), true);
+        this.globalEnvironment = allocateAll(heap, program.bindings, emptyMap(), true);
     }
 
     public void step() {
@@ -96,15 +96,12 @@ public class Machine {
                         closure.code().freeVariables, closure.capture(),
                         closure.code().parameters, arguments);
 
-                if (!closure.code().isUpdateable) {
-                    return new Eval(closure.code().body, localEnvironment);
-                } else {
+                if (closure.code().isUpdateable) {
                     machine.updateStack.push(new UpdateFrame(machine.argumentStack, machine.returnStack, address));
                     machine.argumentStack = emptyStack();
                     machine.returnStack = emptyStack();
-
-                    return new Eval(closure.code().body, localEnvironment);
                 }
+                return new Eval(closure.code().body, localEnvironment);
             }
         }
     }
@@ -123,7 +120,7 @@ public class Machine {
                 machine.returnStack = frame.returnStack();
 
                 // Update address with a new closure
-                machine.heap.update(frame.address(), standardConstructorClosure(this));
+                machine.heap.update(frame.address(), standardConstructorClosure());
 
                 return this; // Try again.
 
@@ -142,7 +139,7 @@ public class Machine {
 
                 if (continuation.alternatives().defaultAlternative instanceof DefaultBindingAlternative def) {
                     // Build a closure that contains the returned constructor applied to its arguments.
-                    Closure boundClosure = standardConstructorClosure(this);
+                    Closure boundClosure = standardConstructorClosure();
 
                     continuation.savedEnvironment().put(def.variable, new Address(machine.heap.allocate(boundClosure)));
                     return new Eval(def.expression, continuation.savedEnvironment());
@@ -155,11 +152,11 @@ public class Machine {
             }
         }
 
-        private static Closure standardConstructorClosure(ReturnConstructor ret) {
-            final List<Variable> constructorArguments = Variable.arbitrary(ret.arguments().size());
+        private Closure standardConstructorClosure() {
+            final List<Variable> constructorArguments = Variable.arbitrary(arguments().size());
             return new Closure(
-                    new LambdaForm(constructorArguments, false, emptyList(), new ConstructorApplication(ret.constructor(), constructorArguments)),
-                    ret.arguments()
+                    new LambdaForm(constructorArguments, false, emptyList(), new ConstructorApplication(constructor(), constructorArguments)),
+                    arguments()
             );
         }
     }
@@ -207,12 +204,8 @@ public class Machine {
         public State visit(FunctionApplication application) {
             final var function = value(localEnvironment, globalEnvironment, application.function);
             if (function instanceof Address a) {
-                List<Value> arguments = new ArrayList<>(application.arguments.size());
-
                 // Evaluate arguments
-                for (Atom argument : application.arguments) {
-                    arguments.add(value(localEnvironment, globalEnvironment, argument));
-                }
+                final List<Value> arguments = values(localEnvironment, globalEnvironment, application.arguments);
 
                 // And push them onto the argument stack.
                 for (int i = arguments.size() - 1; i >= 0; i--) {
