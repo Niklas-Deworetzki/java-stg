@@ -1,4 +1,6 @@
 
+\newcommand{\concat}{\mathbin{+\mkern-10mu+}}
+
 \chapter{Implementierung}\label{chap:implementierung}
 
 Das Kernziel des Projektes ist es, die formale Notation der operationellen Semantik in eine ausführbare Implementierung umzuwandeln.
@@ -25,7 +27,7 @@ Diese Umgebung ist jedoch während der gesamten Laufzeit nicht verändert.
 
 Die drei verschiedenen Stacks werden als \texttt{Deque} aus dem Paket \texttt{java.util} dargestellt.
 Für die Elemente, die diese Stacks speichern, werden verschiedene Klassen angelegt, um die einzelnen Ausprägungen darzustellen.
-Continuations und die Informationen zur Ersetzung von Closures (genannt Update-Frame) werden jeweils als Records in Java dargestellt.
+Continuations und die Informationen zur Ersetzung von Closures (genannt Update-Rahmen) werden jeweils als Records in Java dargestellt.
 
 Für Werte, die auf dem Argument-Stack liegen, existieren zwei Ausprägungen: Ganzzahlen und Adressen.
 Es wird für beide jeweils ein Record erstellt, welcher einer gemeinsame Schnittstelle implementiert.
@@ -39,40 +41,424 @@ public sealed interface Value {
 \end{lstlisting}
 
 Ähnlich wird bei den Ausprägungen des Maschinencodes vorgegangen.
-Hier existieren insgesamt vier Ausprägungen: \textbf{Eval}, \textbf{Enter}, \textbf{Return Constructor} und \textbf{Return Integer}.
+Da diese den Zustand der Maschine maßgeblich bestimmen, wird eine Schnittstelle \texttt{State} definiert, die für die verschiedenen Ausprägungen zur Verfügung steht.
+Die Schnittstelle definiert dabei eine Methode \texttt{State transfer(Machine)}, die den nächsten Maschinenzustand zurückgibt.
+Auf diese Weise wird das \textit{Tagless}-Verhalten der \gls{stg} simuliert, indem keine expliziten Fallunterscheidungen für den aktuellen Ausführungszustand getroffen werden müssen.
+Stattdessen wird polymorph zur richtigen Aktion für den aktuellen Ausführungszustand gesprungen.
+Die vier Ausprägungen, die der Maschinencode annehmen kann sind: \textit{Eval}, \textit{Enter}, \textit{Return Constructor} und \textit{Return Integer}.
 
 
-\begin{lstlisting}[language=java, morekeywords={record, sealed}, caption={Darstellung der Ausprägungen des Maschinencodes in Java}, label={lst:code}]
-public sealed interface Code {
-  record Eval(Expression expression,
-    Map<Variable, Value> locals) implements Code {}
-
-  record Enter(int address) implements Code {}
-
-  record ReturnConstructor(Constructor constructor,
-    List<Value> arguments) implements Code {}
-
-  record ReturnInteger(int integer) implements Code {}
+\begin{lstlisting}[language=java, morekeywords={record, sealed}, caption={Schnittstelle für die Ausprägungen des Maschinencodes}, label={lst:code}]
+public sealed interface State {
+    State transfer(final Machine machine);
 }
 \end{lstlisting}
 
 
-\section{Voraussetzungen zur Auswertung}
+\section{Auswertung von Atomen}
 
-Funktion val
+Um Atome auszuwerten, wird eine Funktion \texttt{val} definiert, die auf die lokale Umgebung $\rho$ und die globale Umgebung $\sigma$ zugreift.
+Diese Funktion wertet eine Konstante zu ihrem Zahlenwert aus und sucht den Wert einer Variablen in der umliegenden Umgebung.
+Dabei wird die lokale Umgebung der globalen Vorgezogen.
 
-Der Startzustand
+\[
+  val(\rho, \sigma, x) =
+    \begin{cases}
+      Int\ x & \text{falls}\ x\ \text{eine Konstante} \\
+      \rho\ x & \text{falls}\ x\ \in\ dom(\rho) \\
+      \sigma\ x & \text{andernfalls}
+    \end{cases}
+\]
 
+
+\section{Startzustand}
+
+Der Startzustand beginnt mit der Auswertung der \texttt{main} Funktion, die implizit durch die Maschine aufgerufen wird.
+
+\begin{lstlisting}[language=Java]
+private State state = new Eval(
+ new FunctionApplication(new Variable("main"), emptyList()),
+ emptyMap());
+\end{lstlisting}
+
+Die etwas verbose Darstellung in Java beschreibt detailliert den Startzustand:
+Es wird mit der Auswertung einer Funktionsanwendung begonnen.
+Die angewandte Funktion ist dabei durch die Variable \texttt{main} definiert und besitzt eine leere Parameterliste.
+Zudem ist die Umgebung, in der die Auswertung stattfindet, leer.
+
+Die verschiedenen benötigten Stacks werden ebenfalls leer initialisiert.
+
+\begin{lstlisting}[language=java]
+private Deque<Value> argumentStack = emptyStack();
+private Deque<Continuation> returnStack = emptyStack();
+private Deque<UpdateFrame> updateStack = emptyStack();
+\end{lstlisting}
+
+Letztlich werden Heap und die globale Umgebung auch mit den Standardwerten initialisiert.
+Die Implementierung der Funktion \texttt{allocateAll}, welche verwendet wird, um alle globalen Namensbindungen in die globale Umgebung einzutragen und gleichzeitig auf dem Heap anzulegen, wird in \ref{sec:namensbindungen} näher gezeigt.
+
+\begin{lstlisting}[language=java]
+private final Heap heap = new Heap();
+private final Map<Variable, Value> globalEnvironment = allocateAll(heap, program.bindings, emptyMap(), true);
+\end{lstlisting}
+
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{start-state}
+  \caption{Startzustand der Maschine}\label{fig:start-state}
+\end{figure}
 
 \section{Funktionsanwendungen}
 
+Die Semantik zur Auswertung von Funktionanwendungen werden in \cn{stg} durch Regel~1 und Regel~2 gegeben.
+Vor dem Pfeil steht ein Muster, das die Komponenten des Maschinenzustands gegeben durch Reihenfolge listet: \textit{Maschinencode, Argument-Stack, Return-Stack, Update-Stack} und \textit{Heap}.
+In der letzten Zeile steht das Resultat der Auswertung als folgender Maschinenzustand.
 
-\section{Namensbindungen}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{rule-1}
+  \caption{Auswertung von Funktionsanwendungen}\label{fig:rule-1}
+\end{figure}
+
+In der Implementierung in Java wird der Zustand \textit{Eval} durch das Visitor-Muster abgebildet.
+Es wird also für jeden möglichen Ausdruck, der ausgewertet werden kann eine \texttt{State visit(\texttt{Ausdruck})} Methode implementiert, die den Ausdruck entsprechend Auswertet und den Zustand für den nächsten Auswertungsschritt zurückliefert.
+
+Die Implementierung wertet die Funktion mittels \texttt{value} aus und prüft, ob eine Adresse als Ergebniswert vorliegt.
+Ist dies der Fall, werden die Argumente ausgewertet, mit dem Argumentstack konkateniert und ein neuer Zustand zurückgegeben, der die Closure betritt und somit den darin enthaltenen Code ausführt.
+
+\begin{lstlisting}[language=java,caption={Auswertung von Funktionsanwendungen}]
+public State visit(FunctionApplication app) {
+  final Value function = value(rho, sigma, app.function);
+  if (function instanceof Address a) {
+    List<Value> args = values(rho, sigma, app.arguments);
+    concat(args, argumentStack);
+    return new Enter(a.address());
+  }
+  ...
+\end{lstlisting}
+
+
+Die zweite relevante Regel für die Auswertung von Funktionsanwendungen beschreibt das Betreten in eine Closure.
+Hierbei wird die Closure als Adresse dargestellt und der entsprechende Wert vom Heap geholt.
+Wie Regel~(4.2) zeigt, wird für die Auswertung eine lokale Umgebung zusammengestellt, welche die gefangenen Werte der freien Variablen der Closure an die definierte Liste der freien Variablen bindet und die Argumente auf dem Argument-Stack an die Liste der Parameter.
+Dabei werden die Werte vom Argument-Stack konsumiert und anschließend mit der Auswertung des Closure-Rumpfes fortgeführt.
+
+\begin{lstlisting}[language=java,morekeywords={record}, caption={Implementierung des Betretens einer Closure}]
+public record Enter(int address) implements State {
+  public State transfer(final Machine machine) {
+    final Closure closure = machine.heap.get(address);
+    if (machine.argumentStack.size()
+         >= closure.code().parameters.size()) {
+      final var localEnvironment = mkLocalEnv(...);
+      return new Eval(closure.body(), localEnvironment);
+    }
+   ...
+\end{lstlisting}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{rule-2}
+  \caption{Betreten einer Closure}\label{fig:rule-2}
+\end{figure}
+
+\section{Namensbindungen}\label{sec:namensbindungen}
+
+In der \gls{stg}-Sprache sind Namensbindungen für Speicherallokation zuständig.
+Folglich ist dies ein großer Aufgabenteil bei der Auswertung von Namensbindungen.
+Zusätzlich entsteht die Aufgabe, den inneren Ausdruck der Namensbindung auszuwerten und die Umgebung für diesen aufzubauen.
+
+In Abbildung~\ref{fig:stg-rule3} wird Regel~3 aus \cn{stg} dargestellt.
+Man beachte, dass in dieser Notation die globale Umgebung $\sigma$ in jeder Regel angegeben wird, ohne sie jemals zu ändern.
+Im dargestellten Fall, der die Auswertung von nicht-rekursiven Namensbindungen mit \texttt{let} beschreibt, ist es möglich, die drei Aufgabenteile strikt zu trennen.
+Im Falle von rekursiven Namensbindungen mit \texttt{letrec}, ist dies nicht möglich, da dann $\rho_{rhs}\ =\ \rho'$ gilt und das Aufbauen der Umgebung mit dem Anlegen der Closures auf dem Heap verzahnt ist.
+Um die durch den Ausdruck definierten Closures zu erstellen, müssen die Adressen aller im Ausdruck definierter Closures bekannt sein.
+Damit eine Closure auf den Heap gelegt werden kann, muss diese jedoch erstellt sein.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.95\textwidth]{rule-3}
+  \caption{Regel zur Auswertung von Namensbindungen aus \cn{stg}}\label{fig:stg-rule3}
+\end{figure}
+
+
+Als Lösung für diese gegenseitige Abhängigkeit wird die Funktion \texttt{allocateAll} aus Listing~\ref{lst:allocate-all} verwendet.
+Diese Methode akzeptiert den Heap, eine Liste aus Namensbindungen und eine Umgebung, in der die Namensbindungen stattfinden als Parameter.
+Zusätzlich wird angegeben, ob die Namensbindung rekursiv erfolgen soll.
+Als Effekt legt diese Funktion auf dem Heap Closures für die zu bindenen Namen an und gibt anschließend die lokale Umgebung, in der die gebundenen Namen sichtbar sind, zurück.
+Als Strategie hierfür wird für jeden Namen eine Adresse auf dem Heap zu reserviert, die verwendet werden kann, um die benötigten Closures zu erstellen.
+Die Adresse genügt, damit die gebundenen Namen aufeinander verweisen können.
+Anschließend wird die Eigenschaft der \gls{stg} ausgenutzt, Closures auf dem Heap aktualisieren zu können (siehe Abschnitt \ref{sec:updateable-closures}), um so die erstellten Closures an die jeweiligen Adressen zu platzieren.
+In der Implementierung taucht ein Kombinator \texttt{combineWith} auf, welcher zwei iterierbare Strukturen akzeptiert sowie eine Funktion, die paarweise auf die Elemente der beiden Datenstrukturen angewandt wird.
+Durch ihn werden die reservierten Adressen mit den Namen und erstellten Closures verbunden.
+
+Die Auswertung von Namensbindungen ist mit Hilfe der Methode \texttt{allocateAll} trivial:
+
+\begin{lstlisting}[language=java]
+public State visit(LetBinding let) {
+  Map<Variable, Value> localEnvironment = allocateAll(heap, let.bindings, this.localEnvironment, let.isRecursive);
+  return new Eval(let.expression, localEnvironment);
+}
+\end{lstlisting}
+
+
+\begin{lstlisting}[language=java, caption={Funktion \texttt{allocateAll} zum Anlegen rekursiver Namensbindungen}, label={lst:allocate-all}]
+private static Map<Variable, Value> allocateAll(
+  final Heap heap, final List<Bind> bindings,
+  final Map<Variable, Value> outerEnvironment,
+  final boolean isRecursive) {
+  // Lokale Umgebung wird erstellt mit allen sichtbaren Namen der umliegenden Umgebung.
+  final var localEnvironment =
+    new HashMap<>(outerEnvironment);
+
+  // Reserviere die Adressen aller Definitionen und trage sie in der Umgebung ein.
+  final Iterable<Integer> addresses = heap.reserveMany(bindings.size());
+  combineWith(addresses, bindings, (addr, bind) -> {
+    localEnvironment.put(bind.variable, new Address(addr))
+  });
+
+  final var rhsEnvironment = (isRecursive) ? localEnvironment : outerEnvironment;
+
+  // Aktualisiere Closures im Heap.
+  combineWith(addresses, bindings, (address, bind) -> {
+    List<Value> capturedValues = new ArrayList<>();
+    for (Variable free : bind.lambda.freeVariables())
+      capturedValues.add(rhsEnvironment.get(free));
+
+    heap.update(address,
+      new Closure(bind.lambda, capturedValues));
+  });
+  return localEnvironment;
+}
+\end{lstlisting}
 
 
 \section{Fallunterscheidungen}
 
 
+Wird im Auswertungszustand der Maschine auf eine Fallunterscheidung als Ausdruck getroffen, wird nicht sofort zur passenden Alternative gesprungen.
+Die Alternativen werden lediglich als Continuation auf den \textit{Return-Stack} geschoben und die Auswertung des untersuchten Ausdrucks fortgeführt.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{rule-4}
+  \caption{Regel zur Auswertung von Fallunterscheidungen}\label{fig:rule-4}
+\end{figure}
+
+Die Implementierung in Java schiebt ebenso nur eine Continuation auf den Stack und gibt den neuen Maschinenzustand als Ergebnis zurück.
+
+\begin{lstlisting}[language=java]
+public State visit(CaseExpression expression) {
+  returnStack.push(new Continuation(expression.alternatives, localEnvironment));
+  return new Eval(expression.scrutinized, localEnvironment);
+}
+\end{lstlisting}
+
+Die tatsächliche Auswahl einer Alternative geschieht erst nachdem die Auswertung des untersuchten Ausdrucks abgeschlossen ist.
+In diesem Fall wird in einen speziellen Zustand übergegangen, um zur Fallunterscheidung zurückzukehren.
+Dieser Zustand tritt dann ein, wenn die Anwendung eines Konstruktors ausgewertet wird, wie die Regel in Abbildung~\ref{fig:rule-5} zeigt.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{rule-5}
+  \caption{Regel zur Auswertung von Konstruktoranwendungen}\label{fig:rule-5}
+\end{figure}
+
+Abbildungen~\ref{fig:rule-6},~\ref{fig:rule-7}~und~\ref{fig:rule-8} zeigen die involvierten Regeln zur Auswahl einer Alternative.
+Da diese drei Regeln zusammen wirken, um die korrekte Alternative auszuwählen, werden sie zu einer Methode in Java zusammengefasst.
+Die Continuation wird zunächst vom Stack entfernt und anschließend die darin gespeicherten Alternativen der Reihe nach untersucht, ob deren Konstruktor dem Konstruktor aus dem Maschinenzustand entspricht.
+Falls eine passende Alternative gefunden wird, werden die Variablen der Alternative entsprechend Regel~6 gebunden und die in die Auswertung des Ausdrucks der Alternative übergegangen.
+Auf diese Weise wird die Schleife über die Alternativen vorzeitig abgebrochen.
+
+Besitzt jedoch keine der Alternativen einen passenden Konstruktor, so wird die Standardalternative untersucht.
+Zunächst wird auf den Fall aus Regel~8 geprüft.
+Tritt dieser auf, wird das gesamte Ergebnis der Auswertung an einen Namen gebunden statt lediglich einzelne Variablen zu extrahieren.
+Für diesen Fall muss eine Closure angelegt werden, die den Konstruktor und die angewandten Werte speichert\cn{Standard Constructor Closure?}.
+Regel~7 hingegen bindet keinen Namen und setzt die Ausführung wie in Regel~8 mit der Auswertung des Ausdrucks aus der Alternative fort.
+
+\begin{lstlisting}[language=java, morekeywords={record, var}, caption={Implementierung der Auswahl einer Alternative}]
+public record ReturnConstructor(Constructor constructor,
+                List<Value> arguments) implements State {
+  public State transfer(Machine machine) {
+    final var continuation = machine.returnStack.pop();
+
+    // Suche nach passender Alternative.
+    for (Alternative alt : continuation.alternatives())
+      if (areEqual(this.constructor, alt.constructor)) {
+        // Passende Alternative gefunden.
+        combineWith(alt.arguments, this.arguments,
+          continuation.savedEnvironment()::put);
+        return new Eval(alt.expression,
+          continuation.savedEnvironment());
+      }
+
+    // Verwende Standard-Alternative.
+    if (continuation.defaultAlternative()
+         instanceof DefaultBindingAlternative def) {
+      Address address = machine.heap
+        .allocate(standardConstructorClosure());
+      continuation.savedEnvironment()
+        .put(def.variable, address);
+      return new Eval(def.expression,
+        continuation.savedEnvironment());
+
+    } else if (continuation.defaultAlternative()
+         instanceof DefaultFallthroughAlternative def) {
+      return new Eval(def.expression,
+        continuation.savedEnvironment());
+    }
+  }
+}
+\end{lstlisting}
+
+
+Für primitive Zahlenwerte wird ein ähnlicher Zustand \texttt{ReturnInt} bereitgestellt, welcher sich analog zu \texttt{ReturnConstructor} verhält.
+Statt die verschiedenen Alternativen auf passende Konstruktoren zu überprüfen, wird nach einem passenden Zahlenwert gesucht (Regel~11).
+Die Regeln zur Auswahl von Standardalternativen (Regel~12 und Regel~13) sind äquivalent zu denen im Zustand \texttt{ReturnConstructor}.
+Die einzige Besonderheit bei der Auswertung von primitiven Zahlenwerten ist, dass die Auswertung einer Variable, die einen primitiven Zahlenwert speichert, in den Zustand \texttt{ReturnInt} übergeht, anstelle die Closure an der Adresse zu betreten, die in der Variablen gespeichert ist.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{rule-6}
+  \caption{Regel zur Auswahl einer Alternative}\label{fig:rule-6}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{rule-7}
+  \caption{Regel zur Auswahl der Standardalternative}\label{fig:rule-7}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{rule-8}
+  \caption{Regel zur Auswahl der Standardalternative mit Namensbindung}\label{fig:rule-8}
+\end{figure}
+
+
+\section{Aktualisierbare Closures}\label{sec:updateable-closures}
+
+Zum Aktualisieren von Closures auf dem Heap müssen mehrere Regeln zusammenspielen.
+Einerseits wird beim Betreten einer aktualisierbaren Closure ein entsprechender Rahmen auf den Update-Stack geschoben.
+Andererseits muss der Rahmen vom Stack wieder entfernt werden, wenn ein Update ausgelöst wird.
+
+Regel~15 in Abbildung~\ref{fig:rule-15} stellt das Betreten einer aktualisierbaren Closure dar.
+Diese Regel ist ähnlich zur Regel zum Betreten einer nicht-aktualisierbaren Closure mit dem Unterschied, dass ein Update-Rahmen auf den entsprechenden Stack gelegt wird.
+Das Erstellen dieses Rahmens leert den Argument- und Return-Stack.
+Inhalt beider Stacks wird im Rahmen gespeichert zusammen mit der Adresse der aktualisierbaren Closure.
+Dieses Verhalten lässt sich durch Anpassen der existierenden Implementierung mit minimalen Aufwand erreichen, indem eine einzelne Verzweigung ergänzt wird:
+
+\begin{lstlisting}[language=java]
+if (closure.code().isUpdateable) {
+  machine.updateStack.push(new UpdateFrame(
+    machine.argumentStack, machine.returnStack, address));
+  machine.argumentStack = emptyStack();
+  machine.returnStack = emptyStack();
+}
+return new Eval(closure.code().body, localEnvironment);
+\end{lstlisting}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{rule-15}
+  \caption{Regel zum Betreten einer aktualisierbaren Closure}\label{fig:rule-15}
+\end{figure}
+
+
+Der schwierigere Teil ist das Anwenden einer Aktualisierung, wenn die Auswertung einer aktualisierbaren Closure abgeschlossen ist.
+Es existieren zwei Fälle, in denen der Abschluss einer Auswertung erkannt und somit deine Aktualisierung ausgelöst wird.
+
+\begin{itemize}
+\item
+  Wird der Wert einer Closure als Konstruktor bekannt, so folgt anschließend der Versuch, eine Continuation vom Return-Stack zu holen, um die Auswahl einer Alternative auszuführen.
+  Wenn der Return-Stack leer ist, kann dieser Versuch nur scheitern.
+  Diese Situation wird dann als Aktualisierung erkannt.
+\item
+  Ist der Wert einer Closure eine Funktion, versucht diese die Funktionsargumente vom Argument-Stack zu konsumieren.
+  Sind keine Argumente auf dem Stack vorhanden, so scheitert dieser Versuch ebenso, was als Aktualisierung erkannt wird.
+\end{itemize}
+
+Diese beiden Ereignisse werden als Regel~16 und Regel~17 dargestellt.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{rule-16}
+  \caption{Regel zur Erkennung von Aktualisierungen bei Konstruktoren}\label{fig:rule-16}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{rule-17}
+  \caption{Regel zur Erkennung von Aktualisierungen bei Funktionen}\label{fig:rule-17}
+\end{figure}
+
+Wie bereits zu erkennen ist, sind diese Regeln relativ komplex und benötigen einige Hilfsdefinitionen, die größtenteils dazu dienen, die Stacks korrekt wiederherzustellen und die korrekte Anzahl an Werten für den aktuellen Zustand zur Verfügung stehen.
+Um beide Fälle in der Implementierung zu erkennen, wird jeweils eine Verzweigung ergänzt.
+
+Listing~\ref{lst:rule-16} stellt dar, wie im Zustand \texttt{ReturnConstructor} überprüft wird, ob der Return-Stack ein Element zum Entfernen enthält.
+Ist dies nicht der Fall, wird der gesamte Wert des Zustands als Closure im Heap gespeichert, an der Adresse die im obersten Update-Rahmen gespeichert ist.
+Der Code zum Einrichten der Closure ist hierbei identisch zu dem, der ausgeführt wird, wenn die Standardalternative im Zustand \texttt{ReturnConstructor} einen Namen bindet.
+In diesem Fall wird ebenso der Konstruktor samt enthaltener Werte für die Closure verwendet.
+
+\begin{lstlisting}[language=java, caption={Implementierung der Erkennung von Aktualisierungen bei Konstruktoren}, label={lst:rule-16}]
+if (machine.returnStack.isEmpty()) {
+  final UpdateFrame frame = machine.updateStack.pop();
+
+  machine.argumentStack = frame.argumentStack();
+  machine.returnStack = frame.returnStack();
+  machine.heap.update(frame.address(), standardConstructorClosure());
+
+  return this;
+}
+\end{lstlisting}
+
+Bei der Übersetzung von Regel~17, wie sie in Listing~\ref{lst:rule-17} zu sehen ist, wird ein großteil der Codezeilen für die Manipulation der verschiedenen Listen verwendet.
+Was sich als Muster kurz und präzise ausdrücken lässt, lässt sich in Java lediglich über das Zusammenspiel von mehreren Listenprimitiven implementieren.
+Da diese Codezeilen nur schwer nachvollziehbar sind und Abbildung~\ref{fig:rule-17} bereits deren Bedeutung darstellt, werden sie hier weggelassen.
+
+Als Besonderheit bei diesen beiden Regeln ist festzustellen, dass sich die Code-Komponente nicht ändert.
+Bei der Implementierung in Java wird dies besonders deutlich, da \texttt{return this} den nächsten Codezustand und somit den aktuellen Zustand unverändert bereitstellt.
+Grund dafür ist, dass der Wert, der durch die Aktualisierung einer Closure entsteht, das Ergebnis einer anderen aktualisierbaren Closure sein könnte.
+Daher wird erneut auf die verschiedenen Fälle geprüft, um eventuell eine weitere Closure zu aktualisieren, bis letztendlich die eigentlicheRegel ausgeführt wird und in den nächsten Zustand übergeht.
+
+
+\begin{lstlisting}[language=java, caption={Implementierung der Erkennung von Aktualisierungen bei Funktionen}, label={lst:rule-17}]
+if (machine.argumentStack.size() < closure.code().parameters.size()) {
+  final List<Variable> updatedParameters = ...;
+  final List<Variable> updatedFreeVars = ...;
+  final List<Value> updatedBoundVals = ...;
+
+  final UpdateFrame frame = machine.updateStack.pop();
+  machine.returnStack = frame.returnStack();
+  machine.argumentStack.addAll(frame.argumentStack());
+
+  machine.heap.update(frame.address(), new Closure(
+    new LambdaForm(updatedFreeVars, false, updatedParameters, machine.heap.get(frame.address()).code().body),
+    updatedBoundVals
+  ));
+
+  return this;
+}
+\end{lstlisting}
+
+
+\section{Ausführung}
+
+Da die Code-Komponente der Maschine \textit{tagless} mit Hilfe des Polymorphismus in Java implementiert wurde, ist die tatsächliche Ausführung der Maschine einfach umzusetzen.
+Ein Ausführungsschritt aktualisiert die Komponente des Zustands durch den Ergebniswert der \texttt{State transfer(Machine)} Methode, die auf dem aktuellen Zustand aufgerufen wird.
+
+\begin{lstlisting}[language=java]
+public void step() {
+  // Auswahl der Aktion erfolgt automatisch durch Sprung zur Implementierung.
+  state = state.transfer(this);
+}
+\end{lstlisting}
+
+Das Ende der Ausführung wird mit dem Abschluss der Auswertung des Startzustands erreicht.
+Entsprechend der Regeln wird hier eine Funktion ohne eine hinreichende Anzahl an Argumenten aufgerufen oder einer der beiden Zustände \texttt{ReturnInt} oder \texttt{ReturnConstructor} wird aktiv, obwohl der Continuation-Stack leer ist.
+Beides sind Indizien, dass eine Aktualisierung aussteht.
+Jedoch gibt es keine Closure mehr, die aktualisiert werden könnte.
+Dieser Fall kann abgefangen werden, um das Ende der Ausführung festzustellen.
 
 
 %%% Local Variables:
