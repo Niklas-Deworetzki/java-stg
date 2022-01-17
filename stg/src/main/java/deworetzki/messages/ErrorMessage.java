@@ -2,7 +2,7 @@ package deworetzki.messages;
 
 import deworetzki.parse.Position;
 import deworetzki.stg.Options;
-import deworetzki.stg.semantic.Code;
+import deworetzki.stg.semantic.Machine;
 import deworetzki.stg.syntax.*;
 import org.fusesource.jansi.Ansi;
 
@@ -185,12 +185,12 @@ public abstract class ErrorMessage extends RuntimeException implements CliMessag
 
 
     public static class NoMatchingAlternative extends ErrorMessage {
-        public NoMatchingAlternative(Alternatives alternatives, Code.ReturnConstructor ret) {
+        public NoMatchingAlternative(Alternatives alternatives, Machine.ReturnConstructor ret) {
             super(alternatives.position, "No alternative matches %s(%s).", ret.constructor(),
                     ret.arguments().stream().map(String::valueOf).collect(Collectors.joining(" ")));
         }
 
-        public NoMatchingAlternative(Alternatives alternatives, Code.ReturnInteger ret) {
+        public NoMatchingAlternative(Alternatives alternatives, Machine.ReturnInteger ret) {
             super(alternatives.position, "No alternative matches primitive %d.", ret.integer());
         }
     }

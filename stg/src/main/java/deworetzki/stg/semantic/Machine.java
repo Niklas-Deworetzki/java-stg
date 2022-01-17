@@ -17,13 +17,14 @@ public class Machine {
 
     private final Heap heap = new Heap();
     private final Map<Variable, Value> globalEnvironment;
+    private final Evaluator evaluator = new Evaluator();
 
     private static <A> Deque<A> emptyStack() {
         return new LinkedList<>();
     }
 
     // Initial State: Eval (main { })
-    private Code code = new Code.Eval(ENTRY_POINT, Collections.emptyMap());
+    private State state = new Eval(ENTRY_POINT, Collections.emptyMap());
 
     private Deque<Value> argumentStack = emptyStack();
     private Deque<Continuation> returnStack = emptyStack();
@@ -34,118 +35,176 @@ public class Machine {
     }
 
     public void step() {
-        if (code instanceof Code.Eval eval) {
-            code = eval.expression().accept(new Evaluator(eval.locals()));
+        state = state.transfer(this);
+    }
 
-        } else if (code instanceof Code.Enter enter) {
-            Closure closure = heap.get(enter.address()); // TODO: Blackhole?
 
-            if (argumentStack.size() < closure.code().parameters.size()) {
-                final List<Variable> updatedParameters = new ArrayList<>(closure.code().parameters.subList(argumentStack.size(), closure.code().parameters.size()));
+    /**
+     * The {@link Machine machine state} can take on different forms, that describe
+     * how the next state can be reached.
+     */
+    public sealed interface State {
+        State transfer(final Machine machine);
+    }
+
+    /**
+     * Evaluate the given {@link Expression} in the given {@link Map Environment}
+     * and apply its value to the arguments on the argument stack.
+     * <p>
+     * The {@link Expression} is an arbitrarily complex STG-language expression.
+     */
+    public record Eval(Expression expression, Map<Variable, Value> locals) implements State {
+        @Override
+        public State transfer(final Machine machine) {
+            return machine.evaluator.evalUnderEnvironment(expression, locals);
+        }
+    }
+
+    /**
+     * Apply the {@link Closure} at the given address to the arguments on the
+     * argument stack.
+     */
+    public record Enter(int address) implements State {
+        @Override
+        public State transfer(final Machine machine) {
+            Closure closure = machine.heap.get(address); // TODO: Blackhole?
+
+            if (machine.argumentStack.size() < closure.code().parameters.size()) {
+                // Not enough arguments to enter the closure. We encountered an update.
+                final List<Variable> updatedParameters = new ArrayList<>(closure.code().parameters.subList(machine.argumentStack.size(), closure.code().parameters.size()));
                 final List<Variable> updatedFreeVars = new ArrayList<>(closure.code().freeVariables);
-                updatedFreeVars.addAll(closure.code().parameters.subList(0, argumentStack.size()));
+                updatedFreeVars.addAll(closure.code().parameters.subList(0, machine.argumentStack.size()));
                 final List<Value> updatedBoundVals = new ArrayList<>(closure.capture());
-                updatedBoundVals.addAll(argumentStack);
+                updatedBoundVals.addAll(machine.argumentStack);
 
-                final UpdateFrame frame = updateStack.pop();
+                final UpdateFrame frame = machine.updateStack.pop();
                 // Restore return stack and append restored argument stack.
-                returnStack = frame.returnStack();
-                argumentStack.addAll(frame.argumentStack());
+                machine.returnStack = frame.returnStack();
+                machine.argumentStack.addAll(frame.argumentStack());
 
-                heap.update(frame.address(), new Closure(
-                        new LambdaForm(updatedFreeVars, false, updatedParameters, heap.get(frame.address()).code().body),
+                machine.heap.update(frame.address(), new Closure(
+                        new LambdaForm(updatedFreeVars, false, updatedParameters, machine.heap.get(frame.address()).code().body),
                         updatedBoundVals
                 ));
 
+                return this; // Try again!
+
             } else {
-                List<Value> arguments = take(closure.code().parameters.size(), argumentStack);
+                List<Value> arguments = take(closure.code().parameters.size(), machine.argumentStack);
 
                 final var localEnvironment = mkLocalEnv(
                         closure.code().freeVariables, closure.capture(),
                         closure.code().parameters, arguments);
 
                 if (!closure.code().isUpdateable) {
-                    code = new Code.Eval(closure.code().body, localEnvironment);
+                    return new Eval(closure.code().body, localEnvironment);
                 } else {
-                    updateStack.push(new UpdateFrame(argumentStack, returnStack, enter.address()));
-                    argumentStack = emptyStack();
-                    returnStack = emptyStack();
+                    machine.updateStack.push(new UpdateFrame(machine.argumentStack, machine.returnStack, address));
+                    machine.argumentStack = emptyStack();
+                    machine.returnStack = emptyStack();
 
-                    code = new Code.Eval(closure.code().body, localEnvironment);
+                    return new Eval(closure.code().body, localEnvironment);
                 }
             }
+        }
+    }
 
-        } else if (code instanceof Code.ReturnConstructor ret) {
-            if (returnStack.isEmpty()) {
-                final UpdateFrame frame = updateStack.pop();
+    /**
+     * Return the given {@link Constructor} applied to the given {@link Value values}
+     * to the continuation on the return stack.
+     */
+    public record ReturnConstructor(Constructor constructor, List<Value> arguments) implements State {
+        @Override
+        public State transfer(Machine machine) {
+            if (machine.returnStack.isEmpty()) {
+                final UpdateFrame frame = machine.updateStack.pop();
                 // Restore argument and return stack.
-                argumentStack = frame.argumentStack();
-                returnStack = frame.returnStack();
+                machine.argumentStack = frame.argumentStack();
+                machine.returnStack = frame.returnStack();
 
                 // Update address with a new closure
-                heap.update(frame.address(), standardConstructorClosure(ret));
+                machine.heap.update(frame.address(), standardConstructorClosure(this));
+
+                return this; // Try again.
 
             } else {
-                final Continuation continuation = returnStack.pop();
+                final Continuation continuation = machine.returnStack.pop();
 
                 for (Alternative alternative : continuation.alternatives().alternatives) {
                     AlgebraicAlternative algebraicAlternative = (AlgebraicAlternative) alternative;
                     // Find matching alternative (if present) and exit early.
-                    if (Constructor.areEqual(ret.constructor(), algebraicAlternative.constructor)) {
-                        combineWith(algebraicAlternative.arguments.iterator(), ret.arguments().iterator(),
+                    if (Constructor.areEqual(constructor, algebraicAlternative.constructor)) {
+                        combineWith(algebraicAlternative.arguments.iterator(), arguments.iterator(),
                                 continuation.savedEnvironment()::put);
-                        code = new Code.Eval(algebraicAlternative.expression, continuation.savedEnvironment());
-                        return;
+                        return new Eval(algebraicAlternative.expression, continuation.savedEnvironment());
                     }
                 }
 
                 if (continuation.alternatives().defaultAlternative instanceof DefaultBindingAlternative def) {
                     // Build a closure that contains the returned constructor applied to its arguments.
-                    Closure boundClosure = standardConstructorClosure(ret);
+                    Closure boundClosure = standardConstructorClosure(this);
 
-                    continuation.savedEnvironment().put(def.variable, new Address(heap.allocate(boundClosure)));
-                    code = new Code.Eval(def.expression, continuation.savedEnvironment());
+                    continuation.savedEnvironment().put(def.variable, new Address(machine.heap.allocate(boundClosure)));
+                    return new Eval(def.expression, continuation.savedEnvironment());
 
                 } else if (continuation.alternatives().defaultAlternative instanceof DefaultFallthroughAlternative def) {
-                    code = new Code.Eval(def.expression, continuation.savedEnvironment());
+                    return new Eval(def.expression, continuation.savedEnvironment());
                 } else {
-                    throw new ErrorMessage.NoMatchingAlternative(continuation.alternatives(), ret);
+                    throw new ErrorMessage.NoMatchingAlternative(continuation.alternatives(), this);
                 }
             }
+        }
 
-        } else if (code instanceof Code.ReturnInteger ret) {
-            final Continuation continuation = returnStack.pop();
+        private static Closure standardConstructorClosure(ReturnConstructor ret) {
+            final List<Variable> constructorArguments = Variable.arbitrary(ret.arguments().size());
+            return new Closure(
+                    new LambdaForm(constructorArguments, false, emptyList(), new ConstructorApplication(ret.constructor(), constructorArguments)),
+                    ret.arguments()
+            );
+        }
+    }
+
+    /**
+     * Return the primitive integer to the continuation on the return stack.
+     */
+    public record ReturnInteger(int integer) implements State {
+        @Override
+        public State transfer(Machine machine) {
+            final Continuation continuation = machine.returnStack.pop();
 
             for (Alternative alternative : continuation.alternatives().alternatives) {
                 PrimitiveAlternative primitiveAlternative = (PrimitiveAlternative) alternative;
 
-                if (ret.integer() == primitiveAlternative.literal.value) {
-                    code = new Code.Eval(primitiveAlternative.expression, continuation.savedEnvironment());
-                    return;
+                if (integer == primitiveAlternative.literal.value) {
+                    return new Eval(primitiveAlternative.expression, continuation.savedEnvironment());
                 }
             }
 
             if (continuation.alternatives().defaultAlternative instanceof DefaultBindingAlternative def) {
-                continuation.savedEnvironment().put(def.variable, new Int(ret.integer()));
-                code = new Code.Eval(def.expression, continuation.savedEnvironment());
+                continuation.savedEnvironment().put(def.variable, new Int(integer));
+                return new Eval(def.expression, continuation.savedEnvironment());
             } else if (continuation.alternatives().defaultAlternative instanceof DefaultFallthroughAlternative def) {
-                code = new Code.Eval(def.expression, continuation.savedEnvironment());
+                return new Eval(def.expression, continuation.savedEnvironment());
             } else {
-                throw new ErrorMessage.NoMatchingAlternative(continuation.alternatives(), ret);
+                throw new ErrorMessage.NoMatchingAlternative(continuation.alternatives(), this);
             }
         }
     }
 
-    private final class Evaluator extends DefaultVisitor<Code> {
-        private final Map<Variable, Value> localEnvironment;
+    private final class Evaluator extends DefaultVisitor<State> {
+        private Map<Variable, Value> localEnvironment;
 
-        public Evaluator(Map<Variable, Value> localEnvironment) {
+        public Evaluator() {
             super();
-            this.localEnvironment = localEnvironment;
+        }
+
+        public synchronized State evalUnderEnvironment(Expression expression, Map<Variable, Value> environment) {
+            this.localEnvironment = environment;
+            return expression.accept(this);
         }
 
         @Override
-        public Code visit(FunctionApplication application) {
+        public State visit(FunctionApplication application) {
             final var function = value(localEnvironment, globalEnvironment, application.function);
             if (function instanceof Address a) {
                 List<Value> arguments = new ArrayList<>(application.arguments.size());
@@ -161,45 +220,46 @@ public class Machine {
                 }
 
                 // Enter the closure of the function.
-                return new Code.Enter(a.address());
+                return new Enter(a.address());
             } else if (function instanceof Int k) {
-                return new Code.ReturnInteger(k.value());
+                return new ReturnInteger(k.value());
             }
 
             throw new ErrorMessage.InternalError(application.function.position, application.function + " is " + function);
         }
 
         @Override
-        public Code visit(PrimitiveApplication application) {
+        public State visit(PrimitiveApplication application) {
             final int[] primitiveValues = values(localEnvironment, globalEnvironment, application.arguments).stream()
                     .mapToInt(Value::getValue)
                     .toArray();
             final int result = application.getOperation().applyAsInt(primitiveValues);
-            return new Code.ReturnInteger(result);
+            return new ReturnInteger(result);
         }
 
         @Override
-        public Code visit(LetBinding let) {
+        public State visit(LetBinding let) {
             Map<Variable, Value> localEnvironment = allocateAll(heap, let.bindings, this.localEnvironment, let.isRecursive);
-            return new Code.Eval(let.expression, localEnvironment);
+            return new Eval(let.expression, localEnvironment);
         }
 
         @Override
-        public Code visit(CaseExpression expression) {
+        public State visit(CaseExpression expression) {
             returnStack.push(new Continuation(expression.alternatives, localEnvironment));
-            return new Code.Eval(expression.scrutinized, localEnvironment);
+            return new Eval(expression.scrutinized, localEnvironment);
         }
 
         @Override
-        public Code visit(ConstructorApplication application) {
+        public State visit(ConstructorApplication application) {
             List<Value> arguments = values(localEnvironment, globalEnvironment, application.arguments);
-            return new Code.ReturnConstructor(application.constructor, arguments);
+            return new ReturnConstructor(application.constructor, arguments);
         }
 
         @Override
-        public Code visit(Literal literal) {
-            return new Code.ReturnInteger(literal.value);
+        public State visit(Literal literal) {
+            return new ReturnInteger(literal.value);
         }
+
     }
 
     /**
@@ -254,26 +314,18 @@ public class Machine {
         return localEnvironment;
     }
 
-    private Map<Variable, Value> mkLocalEnv(final List<Variable> freeVariables,
-                                            final List<Value> boundValues,
-                                            final List<Variable> parameters,
-                                            final List<Value> arguments) {
+    private static Map<Variable, Value> mkLocalEnv(final List<Variable> freeVariables,
+                                                   final List<Value> boundValues,
+                                                   final List<Variable> parameters,
+                                                   final List<Value> arguments) {
         Map<Variable, Value> localEnvironment = new HashMap<>(freeVariables.size() + parameters.size());
         combineWith(freeVariables, boundValues, localEnvironment::put);
         combineWith(parameters, arguments, localEnvironment::put);
         return localEnvironment;
     }
 
-    private static Closure standardConstructorClosure(Code.ReturnConstructor ret) {
-        final List<Variable> constructorArguments = Variable.arbitrary(ret.arguments().size());
-        return new Closure(
-                new LambdaForm(constructorArguments, false, emptyList(), new ConstructorApplication(ret.constructor(), constructorArguments)),
-                ret.arguments()
-        );
-    }
-
-    public Code getCode() {
-        return code;
+    public State getState() {
+        return state;
     }
 
     public Heap getHeap() {

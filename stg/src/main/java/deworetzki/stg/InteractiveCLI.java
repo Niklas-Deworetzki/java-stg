@@ -1,6 +1,5 @@
 package deworetzki.stg;
 
-import deworetzki.stg.semantic.Code;
 import deworetzki.stg.semantic.Continuation;
 import deworetzki.stg.semantic.Machine;
 import deworetzki.stg.semantic.UpdateFrame;
@@ -30,19 +29,19 @@ public final class InteractiveCLI implements Runnable {
                 machine.step();
             }
         } catch (NoSuchElementException returnFromExecution) {
-            final Code code = machine.getCode();
-            if (code instanceof Code.ReturnConstructor ret) {
+            final Machine.State state = machine.getState();
+            if (state instanceof Machine.ReturnConstructor ret) {
                 System.out.println(ret.constructor());
-            } else if (code instanceof Code.ReturnInteger ret) {
+            } else if (state instanceof Machine.ReturnInteger ret) {
                 System.out.println(ret.integer());
             } else {
-                System.out.printf("Error in state %s: %s%n", code, returnFromExecution.getMessage());
+                System.out.printf("Error in state %s: %s%n", state, returnFromExecution.getMessage());
             }
         }
     }
 
     public void showState() {
-        System.out.printf("State: %s%n", showCodeState(machine.getCode()));
+        System.out.printf("State: %s%n", showMachineState(machine.getState()));
         System.out.printf("Arguments: %s%n", showStack(machine.getArgumentStack(), String::valueOf, 7));
         System.out.printf("Return To: %s%n", showStack(machine.getReturnStack(), InteractiveCLI::showContinuation, 3));
         System.out.printf("Updates: %s%n", showStack(machine.getUpdateStack(), InteractiveCLI::showUpdateFrame, 1));
@@ -59,21 +58,21 @@ public final class InteractiveCLI implements Runnable {
         return Integer.toString(continuation.alternatives().position.getLine());
     }
 
-    private static String showCodeState(Code code) {
-        if (code instanceof Code.Eval eval) {
+    private static String showMachineState(Machine.State state) {
+        if (state instanceof Machine.Eval eval) {
             return String.format("Eval %s", showExpression(eval.expression()));
 
-        } else if (code instanceof Code.Enter enter) {
+        } else if (state instanceof Machine.Enter enter) {
             return String.format("Enter @%d", enter.address());
 
-        } else if (code instanceof Code.ReturnConstructor ret) {
+        } else if (state instanceof Machine.ReturnConstructor ret) {
             return "Return " + ret.constructor();
 
-        } else if (code instanceof Code.ReturnInteger ret) {
+        } else if (state instanceof Machine.ReturnInteger ret) {
             return "Return " + ret.integer();
         }
 
-        return code.getClass().getSimpleName();
+        return state.getClass().getSimpleName();
     }
 
     private static String showExpression(Expression expression) {
