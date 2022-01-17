@@ -47,14 +47,36 @@ public sealed interface Value {
         }
     }
 
-    // TODO: Documentation from val
+    /**
+     * This function accepts an {@link Atom} and returns its {@link Value}.
+     * <p>
+     * It is implemented after <var>val</var> from <i>Implementing lazy functional languages
+     * on stock hardware: the Spineless Tagless G-machine</i> by Simon Peyton Jones (p. 33).
+     * <p>
+     * A {@link Literal} is evaluated into its {@link Int} value. A {@link Variable} is looked
+     * up in the surrounding environments, favoring local variables for global ones.
+     *
+     * <pre>
+     * value &#963; &#961; k = Int k
+     * value &#963; &#961; v = &#963; v     if v &#8712; dom(&#963;)
+     *             = &#961; v     otherwise
+     * </pre>
+     *
+     * @param localEnvironment  The local environment &#963;.
+     * @param globalEnvironment The global environment &#961;.
+     * @param atom              The {@link Atom} to evaluate.
+     * @return The {@link Value} of an {@link Atom}.
+     */
+    @SuppressWarnings("SuspiciousMethodCalls")
     static Value value(Map<Variable, Value> localEnvironment,
                        Map<Variable, Value> globalEnvironment,
                        Atom atom) {
         if (atom instanceof Literal literal) {
             return new Int(literal.value);
+        } else if (localEnvironment.containsKey(atom)) {
+            return localEnvironment.get(atom);
         } else {
-            return getValue(localEnvironment, globalEnvironment, (Variable) atom);
+            return globalEnvironment.get(atom);
         }
     }
 
@@ -64,10 +86,5 @@ public sealed interface Value {
         return atoms.stream()
                 .map(atom -> value(localEnvironment, globalEnvironment, atom))
                 .collect(Collectors.toList());
-    }
-
-    private static <K, V> V getValue(Map<K, V> local, Map<K, V> global, K key) {
-        final V result = local.get(key);
-        return (result != null) ? result : global.get(key);
     }
 }
