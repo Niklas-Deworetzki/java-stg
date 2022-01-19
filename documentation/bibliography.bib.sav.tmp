@@ -1,0 +1,129 @@
+@Book{Miller_CommonLanguageInfrastructure,
+  author    = {James S. Miller, Susann Ragsdale},
+  publisher = {Addison-Wesley},
+  title     = {The {C}ommon {L}anguage {I}nfrastructure {A}nnotated {S}tandard},
+  year      = {2003},
+  isbn      = {0321154932},
+  month     = nov,
+  ean       = {9780321154934},
+  pagetotal = {928},
+  url       = {https://www.ebook.de/de/product/3260570/james_s_miller_susann_ragsdale_the_common_language_infrastructure_annotated_standard.html},
+}
+
+@Article{Slot_ProblemSpaceInvariance,
+  author   = {Slot, Cees and van Emde Boas, Peter},
+  journal  = {Information and Computation},
+  title    = {The {P}roblem of {S}pace {I}nvariance for {S}equential {M}achines},
+  year     = {1988},
+  number   = {2},
+  pages    = {93-122},
+  volume   = {77},
+  abstract = {In complexity theory the use of informal estimates can be justified by appealing to the Invariance Thesis which states that all standard models of sequential computing devices are equivalent in the sense that the fundamental complexity classes do not depend on the precise model chosen for their definition. This thesis would require, among others, that a RAM can be simulated by a Turing machine with constant factor overhead in space. We argue that the definition of RAM space, at least in the manner it is traditionally given in the literature, is inadequate for this purpose. The invariance thesis can be validated only in a weak interpretation. The rather complicated simulation which achieves the constant factor space overhead is based on a new method for condensing space and uses perfect hash functions with minimal program size.},
+  doi      = {https://doi.org/10.1016/0890-5401(88)90052-1},
+}
+
+@Online{Wiki_Haskell,
+  author   = {Wikibooks{,} The Free Textbook Project},
+  title    = {{H}askell / {L}aziness},
+  url      = {https://en.wikibooks.org/w/index.php?title=Haskell/Laziness&oldid=3676028},
+  urldate  = {2022-01-05},
+  year     = {2020},
+  abstract = {Consider the reasons and implications of lazy evaluation. At first glance, we might think that lazy evaluation makes programs more efficient. After all, what can be more efficient than not doing anything? In practice, however, laziness often introduces an overhead that leads programmers to hunt for places where they can make their code more strict. The real benefit of laziness is in making the right things efficient enough. Lazy evaluation allows us to write more simple, elegant code than we could in a strict environment.},
+}
+
+@Book{Steele_CommonLisp,
+  author    = {Steele, Guy L.},
+  publisher = {Digital Press},
+  title     = {{Common} {Lisp} -- {T}he {L}anguage},
+  year      = {1990},
+  edition   = {2.},
+  isbn      = {0131524143},
+  abstract  = {In this greatly expanded edition of the defacto standard, you'll learn about the nearly 200 changes already made since original publication - and find out about gray areas likely to be revised later. Written by the Vice-Chairman of X3J13 (the ANSI committee responsible for the standardization of Common Lisp) and co-developer of the language itself, the new edition contains the entire text of the first edition plus six completely new chapters. They cover:
+
+CLOS, the Common Lisp Object System, with new features to support function overloading and object-oriented programming, plus complete technical specifications
+Loops, a powerful control structure for multiple variables
+Conditions, a generalization of the error signaling mechanism
+Series and generators
+Plus other subjects not part of the ANSI standards but of interest to professional programmers.
+Throughout, you'll find fresh examples, additional clarifications, warnings, and tips - all presented with the author's customary vigor and wit.},
+  pagetotal = {1029},
+}
+
+@Book{Graham_LispAdvanced,
+  author    = {Graham, Paul},
+  publisher = {Prentice Hall},
+  title     = {{O}n {Lisp} -- {A}dvanced {T}echniques for {Common Lisp}},
+  year      = {1993},
+  isbn      = {0130305529},
+  abstract  = {On Lisp is a comprehensive study of advanced Lisp techniques, with bottom-up programming as the unifying theme. It gives the first complete description of macros and macro applications. The book also covers important subjects related to bottom-up programming, including functional programming, rapid prototyping, interactive development, and embedded languages. The final chapter takes a deeper look at object-oriented programming than previous Lisp books, showing the step-by-step construction of a working model of the Common Lisp Object System (CLOS).},
+  pagetotal = {432},
+}
+
+@Article{Odersky_Scala,
+  author    = {Odersky, Martin and Rompf, Tiark},
+  journal   = {Communications of the {ACM}},
+  title     = {{U}nifying {F}unctional and {O}bject-oriented {P}rogramming with {S}cala},
+  year      = {2014},
+  month     = {apr},
+  number    = {4},
+  pages     = {76--86},
+  volume    = {57},
+  abstract  = {Scala unifies traditionally disparate programming-language philosophies to develop new components and component systems.},
+  doi       = {10.1145/2591013},
+  publisher = {Association for Computing Machinery ({ACM})},
+}
+
+@Book{Goldberg_Smalltalk80,
+  author    = {Goldberg, Adele},
+  publisher = {Addison-Wesley},
+  title     = {{Smalltalk-80} -- {T}he {I}nteractive {P}rogramming {E}nvironment},
+  year      = {1983},
+  address   = {Reading, Mass},
+  isbn      = {0201113724},
+}
+
+@InProceedings{Wadler_HaskellLazyClass,
+  author    = {Hudak, Paul and Hughes, John and Peyton Jones, Simon and Wadler, Philip},
+  booktitle = {Proceedings of the Third ACM SIGPLAN Conference on History of Programming Languages},
+  title     = {A {H}istory of {H}askell -- {B}eing {L}azy with {C}lass},
+  year      = {2007},
+  number    = {12},
+  pages     = {1--55},
+  publisher = {Association for Computing Machinery},
+  series    = {HOPL III},
+  abstract  = {This paper describes the history of Haskell, including its genesis and principles, technical contributions, implementations and tools, and applications and impact.},
+  doi       = {10.1145/1238844.1238856},
+  isbn      = {9781595937667},
+  location  = {San Diego, California},
+  url       = {https://doi.org/10.1145/1238844.1238856},
+}
+
+@Article{Jones_StockHardwareSTG,
+  author   = {Peyton Jones, Simon},
+  journal  = {Journal of Functional Programming},
+  title    = {Implementing {L}azy {F}unctional {L}anguages on {S}tock {H}ardware -- {T}he {S}pineless {T}agless {G}-machine},
+  year     = {1992},
+  month    = {July},
+  pages    = {127--202},
+  volume   = {2},
+  abstract = {The Spineless Tagless G-machine is an abstract machine designed to support non- strict higher-order functional languages. This presentation of the machine falls into three parts. Firstly, we give a general discussion of the design issues involved in implementing non-strict functional languages.
+Next, we present the STG language, an austere but recognisably-functional language, which as well as a denotational meaning has a well-defined operational semantics. The STG language is the \abstract machine code" for the Spineless Tagless G-machine.
+Lastly, we discuss the mapping of the STG language onto stock hardware. The success of an abstract machine model depends largely on how efficient this mapping can be made, though this topic is often relegated to a short section. Instead, we give a detailed discussion of the design issues and the choices we have made. Our principal target is the C language, treating the C compiler as a portable assembler.},
+  url      = {https://www.microsoft.com/en-us/research/publication/implementing-lazy-functional-languages-on-stock-hardware-the-spineless-tagless-g-machine/},
+}
+
+@Article{Bolingbroke_WhatIsSTG,
+  author  = {Bolingbroke, Max},
+  journal = {The GHC Wiki},
+  title   = {{G}enerated {C}ode -- {W}hat is {STG}, {E}xactly?},
+  year    = {2010},
+  month   = apr,
+  url     = {https://gitlab.haskell.org/ghc/ghc/-/wikis/commentary/compiler/generated-code},
+  urldate = {2022-01-04},
+}
+
+@Online{Luposchainsky_StgInterpreter,
+  author  = {Luposchainsky, David and others},
+  title   = {{STGi} -- {STG} {I}nterpreter},
+  url     = {https://github.com/quchen/stgi/tree/2920b7c1f83f5516030d1806ce4913d46a8a2463},
+  urldate = {2022-01-19}

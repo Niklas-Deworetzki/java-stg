@@ -5,18 +5,18 @@ Diese Ausarbeitung ist Teil der Dokumentation eines Projektes aus dem Modul \tex
 
 Wie der Name es bereits verrät, liegt der Fokus der Veranstaltung auf Programmiersprachen mit einem kleinen Sprachkern, sogenannten \textit{Kernel-Sprachen}.
 Diese Sprachen besitzen zumeist die Möglichkeit, sich mit eigenen Mitteln selbst zu erweitern, um so Schicht für Schicht höhere Abstraktionen aufzubauen, ohne diese explizit bei der Implementierung der Sprache zu unterstützen.
-Das macht diese Sprachen nicht nur bei der Implementierung interessant, da die Implementierung eines kleinen Sprachkerns nur mit vergleichsweise geringem Aufwand verbunden ist.
+Das macht diese Sprachen nicht nur für Sprachentwickler interessant, da die Implementierung eines kleinen Sprachkerns nur mit vergleichsweise geringem Aufwand verbunden ist.
 Auch für Anwender sind solche Sprachen interessant, da sie zumeist flexibel sind, über Bibliotheken einfach erweitert werden können und die geringe Zahl der Kernfeatures ein schnelles Erlernen fördert.
-Bekannte Vertreter für Kernelsprachen sind die verschiedenen Lisp-Dialekte, welche im Sprachkern lediglich Listen, Funktionen und Funktionsanwendungen bieten, während die restliche Funktionalität über Makromechanismen oder reflexive Programmierung entstehen.
-Funktionale Sprachen wie Haskell oder Scala wandeln Quellprogramme mit komplexeren Bestandteil in eine kalkülartige Kernsprache um, welche für Analysen im Compiler und die Ausführung herangezogen wird.
-Bei den objektorientierten Programmiersprachen ist Smalltalk als wichtiger Vertreter zu nennen.
+Bekannte Vertreter für Kernelsprachen sind die verschiedenen Lisp-Dialekte, welche im Sprachkern lediglich Listen, Funktionen und Funktionsanwendungen bieten, während die restliche Funktionalität über Makromechanismen oder reflexive Programmierung entstehen~\cite{Graham_LispAdvanced,Steele_CommonLisp}.
+Funktionale Sprachen wie Haskell oder Scala wandeln Quellprogramme mit komplexeren Bestandteil in eine kalkülartige Kernsprache um, welche für Analysen im Compiler und die Ausführung herangezogen wird~\cite{Wadler_HaskellLazyClass, Odersky_Scala}.
+Bei den objektorientierten Programmiersprachen ist Smalltalk als wichtiger Vertreter zu nennen~\cite{Goldberg_Smalltalk80}.
 Hier werden alle Sprachkonstrukte als Objekte dargestellt, welche sich Nachrichten senden können.
 
 Während in den seminaristischen Vorlesungsstunden der Veranstaltung der Fokus zumeist auf den Mechanismen liegt, die in solchen Programmiersprachen verwendet werden, liegt der Fokus dieses Projektes in der Auseinandersetzung mit einem Programmiersprachenkern und besonders auf dem Ausführungsmodell, das diesem zugrunde liegt.
 Die sogenannte \textit{STG-Sprache} wird verwendet, um eine Ausführungsumgebung für Haskell bereitzustellen, weswegen die Sprache nicht auf hoher Flexibilität und Erweiterbarkeit sondern vielmehr auf Maschinennähe und Kontrolle der ausgeführten Operationen zur Laufzeit basiert.
 Die Besonderheiten dieser Programmiersprache wurden im Rahmen des Projektes untersucht und eine Implementierung der dazugehörigen Maschine in der imperativen Programmiersprache Java erstellt.
 
-Diese Ausarbeitung ist in vier weitere Teile gegliedert, welche die verschiedenen Abschnitte des Projektes widerspiegeln.
+Diese Ausarbeitung zum Projekt ist in vier weitere Teile gegliedert, welche die verschiedenen Abschnitte des Projektes widerspiegeln.
 
 \begin{itemize}
 \item Kapitel~\ref{chap:grundlagen} befasst sich mit den Grundlagen hinter der STG-Sprache und der dazugehörigen Maschine.
@@ -26,7 +26,6 @@ Diese Ausarbeitung ist in vier weitere Teile gegliedert, welche die verschiedene
 \item Kapitel~\ref{chap:implementierung} assoziiert die einzelnen Sprachkonstrukte mit der zugehörigen Semantik sowie der Implementierung dieser für eine virtuelle Maschine in Java.
 
 \item Kapitel~\ref{chap:ergebnisse} fasst die Ergebnisse des Projektes zusammen und reflektiert diese.
-
 \end{itemize}
 
 

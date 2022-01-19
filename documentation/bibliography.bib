@@ -31,6 +31,152 @@
   abstract = {Consider the reasons and implications of lazy evaluation. At first glance, we might think that lazy evaluation makes programs more efficient. After all, what can be more efficient than not doing anything? In practice, however, laziness often introduces an overhead that leads programmers to hunt for places where they can make their code more strict. The real benefit of laziness is in making the right things efficient enough. Lazy evaluation allows us to write more simple, elegant code than we could in a strict environment.},
 }
 
+@Book{Steele_CommonLisp,
+  author    = {Steele, Guy L.},
+  publisher = {Digital Press},
+  title     = {{Common} {Lisp} -- {T}he {L}anguage},
+  year      = {1990},
+  edition   = {2.},
+  isbn      = {0131524143},
+  abstract  = {In this greatly expanded edition of the defacto standard, you'll learn about the nearly 200 changes already made since original publication - and find out about gray areas likely to be revised later. Written by the Vice-Chairman of X3J13 (the ANSI committee responsible for the standardization of Common Lisp) and co-developer of the language itself, the new edition contains the entire text of the first edition plus six completely new chapters. They cover:
+
+CLOS, the Common Lisp Object System, with new features to support function overloading and object-oriented programming, plus complete technical specifications
+Loops, a powerful control structure for multiple variables
+Conditions, a generalization of the error signaling mechanism
+Series and generators
+Plus other subjects not part of the ANSI standards but of interest to professional programmers.
+Throughout, you'll find fresh examples, additional clarifications, warnings, and tips - all presented with the author's customary vigor and wit.},
+  pagetotal = {1029},
+}
+
+@Book{Graham_LispAdvanced,
+  author    = {Graham, Paul},
+  publisher = {Prentice Hall},
+  title     = {{O}n {Lisp} -- {A}dvanced {T}echniques for {Common Lisp}},
+  year      = {1993},
+  isbn      = {0130305529},
+  abstract  = {On Lisp is a comprehensive study of advanced Lisp techniques, with bottom-up programming as the unifying theme. It gives the first complete description of macros and macro applications. The book also covers important subjects related to bottom-up programming, including functional programming, rapid prototyping, interactive development, and embedded languages. The final chapter takes a deeper look at object-oriented programming than previous Lisp books, showing the step-by-step construction of a working model of the Common Lisp Object System (CLOS).},
+  pagetotal = {432},
+}
+
+@Article{Odersky_Scala,
+  author    = {Odersky, Martin and Rompf, Tiark},
+  journal   = {Communications of the {ACM}},
+  title     = {{U}nifying {F}unctional and {O}bject-oriented {P}rogramming with {S}cala},
+  year      = {2014},
+  month     = {apr},
+  number    = {4},
+  pages     = {76--86},
+  volume    = {57},
+  abstract  = {Scala unifies traditionally disparate programming-language philosophies to develop new components and component systems.},
+  doi       = {10.1145/2591013},
+  publisher = {Association for Computing Machinery ({ACM})},
+}
+
+@Book{Goldberg_Smalltalk80,
+  author    = {Goldberg, Adele},
+  publisher = {Addison-Wesley},
+  title     = {{Smalltalk-80} -- {T}he {I}nteractive {P}rogramming {E}nvironment},
+  year      = {1983},
+  address   = {Reading, Mass},
+  isbn      = {0201113724},
+}
+
+@InProceedings{Wadler_HaskellLazyClass,
+  author    = {Hudak, Paul and Hughes, John and Peyton Jones, Simon and Wadler, Philip},
+  booktitle = {Proceedings of the Third ACM SIGPLAN Conference on History of Programming Languages},
+  title     = {A {H}istory of {H}askell -- {B}eing {L}azy with {C}lass},
+  year      = {2007},
+  number    = {12},
+  pages     = {1--55},
+  publisher = {Association for Computing Machinery},
+  series    = {HOPL III},
+  abstract  = {This paper describes the history of Haskell, including its genesis and principles, technical contributions, implementations and tools, and applications and impact.},
+  doi       = {10.1145/1238844.1238856},
+  isbn      = {9781595937667},
+  location  = {San Diego, California},
+  url       = {https://doi.org/10.1145/1238844.1238856},
+}
+
+@Article{Jones_StockHardwareSTG,
+  author   = {Peyton Jones, Simon},
+  journal  = {Journal of Functional Programming},
+  title    = {Implementing {L}azy {F}unctional {L}anguages on {S}tock {H}ardware -- {T}he {S}pineless {T}agless {G}-machine},
+  year     = {1992},
+  month    = {July},
+  pages    = {127--202},
+  volume   = {2},
+  abstract = {The Spineless Tagless G-machine is an abstract machine designed to support non- strict higher-order functional languages. This presentation of the machine falls into three parts. Firstly, we give a general discussion of the design issues involved in implementing non-strict functional languages.
+Next, we present the STG language, an austere but recognisably-functional language, which as well as a denotational meaning has a well-defined operational semantics. The STG language is the \abstract machine code" for the Spineless Tagless G-machine.
+Lastly, we discuss the mapping of the STG language onto stock hardware. The success of an abstract machine model depends largely on how efficient this mapping can be made, though this topic is often relegated to a short section. Instead, we give a detailed discussion of the design issues and the choices we have made. Our principal target is the C language, treating the C compiler as a portable assembler.},
+  url      = {https://www.microsoft.com/en-us/research/publication/implementing-lazy-functional-languages-on-stock-hardware-the-spineless-tagless-g-machine/},
+}
+
+@Article{Bolingbroke_WhatIsSTG,
+  author  = {Bolingbroke, Max},
+  journal = {The GHC Wiki},
+  title   = {{G}enerated {C}ode -- {W}hat is {STG}, {E}xactly?},
+  year    = {2010},
+  month   = apr,
+  url     = {https://gitlab.haskell.org/ghc/ghc/-/wikis/commentary/compiler/generated-code},
+  urldate = {2022-01-04},
+}
+
+@Online{Luposchainsky_StgInterpreter,
+  author  = {Luposchainsky, David and others},
+  title   = {{STGi} -- {STG} {I}nterpreter},
+  url     = {https://github.com/quchen/stgi/tree/2920b7c1f83f5516030d1806ce4913d46a8a2463},
+  urldate = {2022-01-19},
+  year    = {2021},
+}
+
+@InProceedings{PeytonJones_FastCurry,
+  author    = {Peyton Jones, Simon},
+  booktitle = {International Conference on Functional Programming},
+  title     = {How to {M}ake a {F}ast {C}urry -- {P}ush/{E}nter vs {E}val/{A}pply},
+  year      = {2004},
+  month     = {September},
+  pages     = {4--15},
+  abstract  = {Higher-order languages that encourage currying are typically implemented using one of two basic evaluation models: push/enter or eval/apply. Implementors use their intuition and qualitative judgements to choose one model or the other.
+
+Our goal in this paper is to provide, for the first time, a more substantial basis for this choice, based on our qualitative and quantitative experience of implementing both models in a state-of-the-art compiler for Haskell.
+
+Our conclusion is simple, and contradicts our initial intuition: compiled implementations should use eval/apply.
+
+ },
+  edition   = {International Conference on Functional Programming},
+  url       = {https://www.microsoft.com/en-us/research/publication/make-fast-curry-pushenter-vs-evalapply/},
+}
+
+@TechReport{JVM17,
+  author      = {Lindholm, Tim and Yellin, Frank and Bracha, Gilad and Buckley, Alex and Smith, Daniel},
+  institution = {Oracle America, Inc.},
+  title       = {The {J}ava {V}irtual {M}achine {S}pecification -- {J}ava {SE 17} {E}dition},
+  year        = {2021},
+}
+
+@Online{LLVM,
+  title   = {The {LLVM} {C}ompiler {I}nfrastructure},
+  url     = {https://llvm.org/},
+  urldate = {2022-01-19},
+  year    = {2022},
+}
+
+@Article{Wadsworth_RelationComputationalDenotational,
+  author   = {Wadsworth, Christopher P.},
+  journal  = {SIAM Journal on Computing},
+  title    = {The {R}elation between {C}omputational and {D}enotational {P}roperties for {S}cott’s ${\text{D}}_\infty $-{M}odels of the {L}ambda-{C}alculus},
+  year     = {1976},
+  number   = {5},
+  pages    = {488--521},
+  volume   = {3},
+  abstract = {A prominent feature of the lattice-theoretic approach to the theory of computation due to D. Scott is the construction of solutions for isomorphic domain equations. One of the simplest of these is a domain isomorphic to the space of all continuous functions from itself to itself, providing the first “mathematical” model for the lambda-calculus of Church and Curry.
+
+However, solutions of such domain equations are not unique; in particular, the lambda-calculus has many models. So the question arises as to which one should choose for computational purposes. We consider the relation between equivalence of meaning in Scott's models and the usual notions of conversion and reduction. By extending the lambda-calculus to allow approximate (i.e., partially specified) expressions and approximate reductions, we show that every expression determines a set of approximate normal forms of which it is the limit in Scott’s model. Two immediate corollaries give a characterization of those expressions whose value is the least element of the model and further justification for the result that various lambda-calculus fixed-point combinators are all equal to the lattice-theoretic least fixed-point operator.
+
+We show also that this leads to a characterization of equivalence which has a natural counterpart for other languages; specifically, expressions have the same meaning in Scott’s model just when either can serve in place of the other in any “program” without altering its “global” properties.},
+}
+
 @Comment{jabref-meta: databaseType:bibtex;}
 
 @Comment{jabref-entrytype: online: req[author;title;year;url;urldate] opt[language;note]}

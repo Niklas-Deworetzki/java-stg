@@ -6,7 +6,7 @@
 % =======================================================
 \newcommand{\MyName}{Niklas Deworetzki}
 \newcommand{\MyTitle}{CS5341~--~Kernel-Architekturen in Programmiersprachen}
-\newcommand{\MyTopic}{The Spineless Tagless G-Machine}        % Thema (Unterüberschrift)
+\newcommand{\MyTopic}{STG~--~Kernelsprache und Ausführungsmodell für nicht-strikte funktionale Programmiersprachen}        % Thema (Unterüberschrift)
 % =======================================================
 
 \usepackage[english, ngerman]{babel} % Automatische Worttrennung
@@ -31,7 +31,7 @@
 
 % Formatierungen für Text, Überschriften, Inhaltsverzeichnis, etc.
 \usepackage{fancyhdr}
-\usepackage{tocbibind}
+\usepackage[nottoc]{tocbibind}
 \usepackage{blindtext}
 \usepackage{helvet}
 \usepackage[lighttt]{lmodern}
@@ -139,8 +139,6 @@ pdftitle={\MyTitle{}~--~\MyTopic{}}]{hyperref}
 
 
 %------------------------------------------------------------------------------
-% Zeilenumbrüche in Links
-\expandafter\def\expandafter\UrlBreaks\expandafter{\UrlBreaks\do\-\do\\/}
 % Zeilenumbrüche bei Unterstrichen (in langen Variablennamen)
 \renewcommand\_{\textunderscore\allowbreak}
 

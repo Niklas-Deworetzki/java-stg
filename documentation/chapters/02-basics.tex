@@ -1,41 +1,43 @@
 
 \chapter{Grundlagen}\label{chap:grundlagen}
 
-Die \gls{stg} beschreibt eine abstrakte Maschine, sowie eine kleine Programmiersprache zur Programmierung ebendieser Maschine, die als STG-Sprache bezeichnet wird.
+Die \gls{stg} beschreibt eine abstrakte Maschine, sowie eine kleine Programmiersprache zur Programmierung ebendieser Maschine, die als STG-Sprache bezeichnet wird~\cite{Jones_StockHardwareSTG}.
 Der vorwiegende Verwendungszweck liegt dabei in der Übersetzung und Ausführung von nicht-strikten funktionalen Programmiersprachen.
 In solchen Programmiersprachen werden Ausdrücke verzögert und nur bei Bedarf ausgewertet.
 Man spricht auch von der sogenannten \textit{Bedarfsauswertung} oder aus dem Englischen \textit{lazy Evaluation}.
 
+% Closure
+
 Dieser Ausführungsmodus kommt mit einer Reihe an großen Herausforderungen.
 Zur Laufzeit muss zwischen ausstehenden oder unterbrochenen Auswertungen (sogenannten \textit{Thunks}) und bereits berechneten Werten unterschieden werden.
 Gleichzeitig soll überflüssige Arbeit vermieden werden, indem Ausdrücke nur so oft wie nötig ausgewertet werden, um anschließend deren Wert für den Falle erneuter Auswertung zu speichern.
-Zudem ist es in funktionalen Sprachen häufig der Fall, dass Ausdrücke nicht nur einfache Werte sondern auch Funktionen berechnen, welche dann auf Argumente angewandt, an andere Funktionen übergeben oder an Namen gebunden werden können.
+Zudem ist es in funktionalen Sprachen häufig der Fall, dass Ausdrücke nicht nur einfache Werte sondern auch Funktionen berechnen, wofür sogenannte \textit{Closures} verwendet werden, die Funktionsimplementierung und die für die Funktion sichtbaren Variablen Speichern.
 Selbstverständlich soll eine Ausführungsumgebung, die all diese Anforderungen unterstützt, auch noch möglichst effizient sein und mit möglichst wenig Speicherbedarf und Rechenzeit auskommen.
 
-Die STG-Maschine verspricht, als abstrakte Maschine diesen Anforderungen nachzukommen und wird seit ???\cn{Datum herausfinden} als  wesentlicher Bestandteil in der Implementierung und Übersetzung von Haskell verwendet.
-Im Ergebnis ist Performance von übersetzten Haskell Programmen häufig vergleichbar mit C.\cn{}
+Die STG-Maschine verspricht, als abstrakte Maschine diesen Anforderungen nachzukommen und wird seit den 1990er Jahren als wesentlicher Bestandteil in der Implementierung und Übersetzung von Haskell verwendet~\cite{Bolingbroke_WhatIsSTG}.
+Im Ergebnis ist Performance von übersetzten Haskell Programmen häufig vergleichbar mit C~\cite{PeytonJones_FastCurry}.
 
 
 \section{Graphenreduktion als Ausführungsmodell}
 
 Die Verwendung einer abstrakten Maschine zur Ausführung einer Programmiersprache ist keine Besonderheit.
-Die ursprünglich für Java entwickelte \gls{jvm} beschreibt eine abstrakte Stackmaschine, die entweder im Rahmen einer virtuellen Maschinenimplementierung ausgeführt wird, oder deren Semantik in Maschinencode für eine reale Maschine übersetzt wird.
+Die ursprünglich für Java entwickelte \gls{jvm} beschreibt eine abstrakte Stackmaschine, die entweder im Rahmen einer virtuellen Maschinenimplementierung ausgeführt wird, oder deren Semantik in Maschinencode für eine reale Maschine übersetzt wird~\cite{JVM17}.
 Um die .NET Plattform herum entstand die \gls{cli}, welche standardisiert eine objektorientierte abstrakte Stackmaschine beschreibt.
-In beiden Fällen soll die Verwendung einer abstrakten Maschine über die Tatsächliche Ausführungsumgebung abstrahieren, um so Programme plattform- und hardwareunabhängig ausführen zu können.
-Eine ähnliche Architektur bietet LLVM mit einer abstrakten Registermaschine.
+In beiden Fällen soll die Verwendung einer abstrakten Maschine über die Tatsächliche Ausführungsumgebung abstrahieren, um so Programme plattform- und hardwareunabhängig ausführen zu können~\cite{Miller_CommonLanguageInfrastructure}.
+Eine ähnliche Architektur bietet LLVM mit einer abstrakten Registermaschine~\cite{LLVM}.
 Hier liegt der Fokus jedoch auf der Optimierung und Übersetzung von Programmen für diese abstrakte Maschine in realen Maschinencode.
 
-All diese Modelle sind nah an dem Modell der handelsüblichen Computer, welche auch als sogenannte Sequentielle Maschinen~\cite{Slot_ProblemSpaceInvariance} Einzug in die theoretische Welt der Berechenbarkeit gehalten haben.
+All diese Modelle sind nah an dem Modell der handelsüblichen Computer, welche auch als sogenannte Sequentielle Maschinen Einzug in die theoretische Welt der Berechenbarkeit gehalten haben~\cite{Slot_ProblemSpaceInvariance}.
 Die Grundannahmen sind hier, dass Rechenschritte einzelne gleichwertige Instruktionen darstellen, die nacheinander ausgeführt werden und jeweils eine Menge an Registern oder Speicherzellen beeinflussen können.
 
 Die STG-Maschine wählt hier einen anderen Ansatz, der näher am Berechnungsvorgehen des Lambda-Kalküls ist:
 Hier liegt das Programm als Datenstruktur vor, in der Ausdrücke als Knoten mit Kanten zu den verwendeten Teilausdrücken vorkommen.
-Reduktionsregeln geben vor, wie schrittweise diese Datenstruktur reduziert werden kann, bis der ausgewertete Ausdruck schließlich eine sogenannte Normalform erreicht~--~eine einheitliche Form des Ausdrucks, die dessen ausgewerteten Wert repräsentiert.
+Reduktionsregeln geben vor, wie schrittweise diese Datenstruktur reduziert werden kann, bis der Ausdruck schließlich eine sogenannte Normalform erreicht~--~eine einheitliche Form des Ausdrucks, die dessen ausgewerteten Wert repräsentiert.
 
 Der Teil \textit{G-Maschine} der STG-Maschine steht dabei für \textit{Graphenreduktionsmaschine}.
-Das auszuwertende Programm liegt also als Graph vor, der schrittweise reduziert wird.
+Das auszuwertende Programm liegt also als Graph vor, der schrittweise reduziert wird~\cite{Wadsworth_RelationComputationalDenotational}.
 Die Darstellung als Graph ermöglicht dabei eine genauere Beschreibung der Laufzeitsemantik eines Programmes, als es durch einen Baum möglich ist.
-Darum wird diese Darstellung der klassischen Repräsentation als Syntaxbaum vorgezogen\cn{Syntaxbaum}.
+Darum wird diese Darstellung der klassischen Repräsentation als Syntaxbaum vorgezogen.
 Abbildung~\ref{fig:graph-reduction} zeigt beispielhaft einen solchen Graphen für den Ausdruck $\mathtt{let}\ x\ =\ \frac{2}{y}\ \mathtt{in}\ x + x$.
 Die Darstellung als Graph verdeutlicht hier, dass die beiden Vorkommnisse von $x$ auf denselben Wert verweisen.
 Wird nun für $y$ der Wert $1$ bekannt, können nacheinander Reduktionsregeln angewandt werden, um den Graphen wie in Abbildung~\ref{fig:graph-reduction} auf einen einzelnen atomaren Wert zu reduzieren.
