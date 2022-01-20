@@ -1,10 +1,10 @@
 
 \chapter{Ergebnisse}\label{chap:ergebnisse}
 
-Mit den Regeln aus Kapitel~\ref{chap:implementierung} und den vorgestellten Sprachkonstrukten aus Kapitel~\ref{chap:stg} ist es nun möglich, nicht-strikte Programme geschrieben in der \gls{stg}-Sprache auszuwerten.
-Die Ausführung erfolgt dabei entsprechend der Spezifikation, ermöglicht die Integration von primitiven Java-Operationen und arbeitet korrekt auf allen unterstützten Werten, von primitiven Zahlen, über einfache Datentypen bis hin zu Funktionen und verzögert ausgewerteten oder sogar endlosen Datenstrukturen.
+Mit den Regeln aus Kapitel~\ref{chap:implementierung} und den vorgestellten Sprachkonstrukten aus Kapitel~\ref{chap:stg} ist es nun möglich, in der \gls{stg}-Sprache geschriebene, nicht-strikte Programme auszuwerten.
+Die Ausführung erfolgt dabei entsprechend der Spezifikation, ermöglicht die Integration von primitiven Java-Operationen und arbeitet korrekt auf allen unterstützten Werten von primitiven Zahlen, über einfache Datentypen bis hin zu Funktionen und verzögert ausgewerteten oder sogar endlosen Datenstrukturen.
 
-Die vollständige Implementierung in Java ist auf GitHub verfügbar\footnote{\url{https://github.com/Niklas-Deworetzki/java-stg}}.
+Die vollständige Implementierung in Java ist auf GitHub verfügbar.\footnote{\url{https://github.com/Niklas-Deworetzki/java-stg}}
 Im selben Projekt befinden sich neben den verschiedenen Quelldateien auch eine Prelude, die vor der Ausführung von \gls{stg}-Programmen geladen werden kann, um einige häufig verwendete Funktionen bereitzustellen.
 
 Das Projekt erfüllt dabei die Ansprüche und Ziele, die zu Beginn gesetzt wurden und präsentiert eine einfache aber funktionstüchtige Implementierung einer virtuellen \gls{stg}-Maschine.
@@ -12,62 +12,80 @@ Zusätzlich werden durch die Prelude die Eigenschaften der \gls{stg}-Sprache als
 Das Hauptziel, die Semantik der \gls{stg}-Maschine korrekt abzubilden wurde erreicht.
 Darüber hinaus werden einige der Erweiterungen, die von der \gls{stg} vorgestellt werden, implementiert.
 Neben der \textit{spineless} Darstellung eines Programms, die durch Verwendung der \gls{stg} \enquote{geschenkt} ist, wird auch die \textit{tagless} Darstellung implementiert.
-Die verschiedenen Maschinenzustände werden nicht durch explizite Tags unterschieden, sondern semantische Aktionen polymorph zur Laufzeit ausgewählt.
+Die verschiedenen Maschinenzustände werden nicht durch explizite Tags unterschieden.
+Stattdessen werden sie durch den Aufruf einer Methode dynamisch zur Laufzeit ausgewählt.
 Zudem werden auch Optimierungen, wie etwa das Aktualisieren von ausgewerteten Closures, unterstützt.
 
 \section{Wichtige Erweiterungen}
 
-Obwohl die Kernfunktionalität der \gls{stg} implementiert ist und auch die besonderen Eigenschaften der Maschine unterstützt werden, existieren einige Erweiterungen und diskutierte Optimierungen aus \cn{stg}, die nicht implementiert sind.
+Obwohl die Kernfunktionalität der \gls{stg} implementiert ist und auch die besonderen Eigenschaften der Maschine unterstützt werden, existieren einige Erweiterungen und diskutierte Optimierungen aus~\cite{Jones_StockHardwareSTG}, die nicht implementiert sind.
 
 Viele der möglichen Erweiterungen, die sich in die \gls{stg}-Maschine einbauen lassen, sind in erster Linie dazu gedacht, die Programmierung zu erleichtern oder den produktiven Betrieb zu ermöglichen.
-So kann beispielsweise ein Foreign Function Interface bereitgestellt werden, um mit existierenden Bibliotheken anderer Programmiersprachen zu interagieren\cn{}.
+So kann beispielsweise ein Foreign Function Interface bereitgestellt werden, um mit existierenden Bibliotheken anderer Programmiersprachen zu interagieren~\cite{Jones_TacklingAwkwardSquad}.
 Die Implementierung dieser Schnittstelle ist dabei ähnlich wie die Integration eingebauter, primitiver Funktionen.
 
 Eine weitere hilfreiche Erweiterung baut auf das Aktualisieren von Closures auf.
-Wird eine Closure, nachdem sie betreten aber bevor sie vollständig ausgewertet wird, durch einen speziellen Wert gesetzt, lassen sich Fehler zur Laufzeit entdecken.
-Ein sogenanntes \textit{Blackhole} lässt sich für eine betretene Closure einsetzen, mit der Eigenschaft, dass das Betreten eines Blackholes einen Fehler wirft.
-Ein solcher Fehler wird nur geworfen, wenn während der Auswertung einer Closure, die selbe Closure erneut betreten wird.
-Das bedeutet, dass ein Wert von sich selbst abhängig ist und somit nicht berechnet werden kann.
+Wird eine Closure nachdem sie betreten wurde, aber bevor sie vollständig ausgewertet wird, durch einen speziellen Wert ersetzt, lassen sich Fehler zur Laufzeit entdecken.
+Ein sogenanntes \textit{Black Hole} lässt sich für eine betretene Closure einsetzen, mit der Eigenschaft, dass das Betreten eines solchen Loches einen Fehler wirft.
+Der Fehlerfall tritt nur dann auf, wenn während der Auswertung einer Closure, die selbe Closure erneut betreten wird.
+Das bedeutet, dass ein Wert von sich selbst abhängig ist und nicht berechnet werden kann~\cite{Jones_StockHardwareSTG}.
 
-Anstelle eines Blackholes, können aber auch andere besondere Darstellungen für Closures eingesetzt werden.
-Beispielsweise ist es möglich, betretene Closures durch Synchronisierungsblöcke.
+Anstelle eines Black Holes, können aber auch andere besondere Darstellungen für Closures eingesetzt werden.
+Beispielsweise ist es möglich, betretene Closures durch Synchronisierungsblöcke zu ersetzen.
 Dadurch können mehrere Closures gleichzeitig betreten und in unterschiedlichen Threads ausgewertet werden.
-Ist die Auswertung abgeschlossen sorgen Synchronisierungsblöcke dafür, dass die verschiedenen Threads wieder zusammenführen.
-Auf diese Weise kann unsichtbar für einen Nutzer Parallelisierung implementiert werden.
+Ist die Auswertung abgeschlossen sorgen die Synchronisierungsblöcke dafür, dass die verschiedenen Threads wieder zusammengeführt werden.
+Auf diese Weise kann unsichtbar für einen Nutzer Parallelisierung implementiert werden~\cite{Jones_StockHardwareSTG}.
 
-Die Wohl wichtigste Erweiterung, die zunächst notwendig ist, um die produktive Verwendung der Implementierung überhaupt in Betracht zu ziehen, ist die Implementierung eines Garbage Collectors.
+Die Wohl wichtigste Erweiterung, die zunächst notwendig ist, um die produktive Verwendung der Implementierung überhaupt in Betracht ziehen zu können, ist die Implementierung eines Garbage Collectors.
 Die Sprachsemantik definiert nur ein Konstrukt für die Speicherallokation.
 Eine kontrollierte Speicherfreigabe ist nicht vorgesehen.
-Stattdessen gibt es einige Modelle für eine Garbage Collection, die im Hintergrund oder Parallel läuft und sich die Struktur des Graphen zu Nutze macht, um zu entscheiden, welche Closures für die Auswertung relevant sind\cn{}.
-
+Stattdessen werden einige Algorithmen präsentiert, die automatisch ungenutzte Closures auf dem Heap erkennen und freigeben können~\cite{Jones_StockHardwareSTG}.
+Wird ein solcher Algorithmus angestoßen, wenn nicht mehr genügend Speicher verfügbar ist oder läuft er dauerhaft im Hintergrund, ist es möglich, nicht benötigten Speicher freizugeben und auf dem Heap lediglich Closures zu halten, die für die Auswertung relevant sind.
 
 \section{Schwachstellen der Implementierung}
 
 Auch wenn sie entsprechend der Beschreibung arbeitet, existieren einige Schwachstellen in der vorgestellten Implementierung.
 Diese Beziehen sich hauptsächlich auf die Ausführung und die Nutzerfreundlichkeit der Maschine.
 
-Main wird durch Fehler erkannt.
+Ein Beispiel hierfür ist der Abschluss der Ausführung.
+Die Maschine selbst sieht keinen Endzustand vor, in dem die Ausführung abgeschlossen ist und der von außerhalb eindeutig als solcher Erkannt werden kann.
+Stattdessen wird~--~wie in Abschnitt~\ref{sec:runtime} dargestellt~--~erkannt, wenn beim Ersetzen einer Closure auf den leeren Update-Stack zugegriffen wird.
+Liegt in einem solchen Fall ein \textit{Return Integer} oder \textit{Return Constructor}-Zustand vor, wird der von diesen zurückgegebene Wert als Ergebnis der Maschine angezeigt.
+Dabei wird lediglich die Zahl als Text formatiert oder der Name des Konstruktors ausgegeben.
+Komponenten von Datenstrukturen liegen lediglich als Adresse auf dem Heap und womöglich unausgewertet dem Konstruktor vor.
+Eine komplexere Ausgabe ist also nicht ohne Weiteres möglich.
 
-Kein Debugger, keine vernünftige Ausgabe von Werten.
+Auch vor dem Erreichen eines Programmendes können nutzerunfreundliche Eigenschaften der Implementierung beobachtet werden.
+Liegt in einem ausgeführten \gls{stg}-Programm ein Fehler vor, so ist das Verhalten der Maschine oftmals unerwartet (wenn auch Korrekt bezüglich der Maschinensemantik).
+Fehler werden an scheinbar willkürlichen Stellen bekannt und durch die verzögerte Auswertung teilweise auch erst in späteren Programmabschnitten relevant.
+Ohne einen Debugger und eine intuitive Darstellung von komplexen Werten wird das Debugging oft zu einem Ratespiel.
 
-Trotz Erfahrungsschatz, einige wichtige Felder unberührt.
-Wie Maschinencode, wie Speicherlayout und Darstellung, wie Speicherverwaltung.
+Der Hauptnutzen bei der Implementierung liegt wohl im akademischen Wert und in der gesammelten Erfahrung.
+Doch auch hier werden einige Kapitel aus~\cite{Jones_StockHardwareSTG} ausgelassen.
+In einer Sprache, die mehr Kontrolle über Speicherlayout und Speicherallokation bietet, wäre es möglich, Diskussionen über die Darstellung und das Speicherlayout von Closures sowie die Speicherverwaltung mit einem Garbage Collector nachzuvollziehen.
+Eine vollständige Implementierung all dieser Aspekte sprengt jedoch den Rahmen (und auch den Fokus) dieser Veranstaltung bei Weitem.
 
 
-\section{Einordnung im Vergleich zu existierenden Lösungen}
+\section{Vergleich mit anderen Implementierungen}
 
-STG für Graphenausführung wird weiterentwickelt, zudem andere Implementierungen bekannt.
-In der aktuellen Form nicht mehr up-to-date. Ausführungsformen optimieren Funktionsanwendungen, Parameterübergabe für häufige Use-Cases\cn{Fast Curry}
+Letztlich soll die entstandene Implementierung im Vergleich zu bereits existierendem Material zur \gls{stg}-Maschine eingeordnet werden.
+Viele weitere Implementierungen der \gls{stg}-Maschine sind nicht bekannt.
+Jedoch wird sie gerade im Kontext von Haskell benutzt und dementsprechend auch Weiterentwickelt.
+Hier ist als größte Erweiterung ein anderer Ansatz bei der Übergabe von Funktionsargumenten zu nennen, wodurch gerade bei Funktionen höherer Ordnung für die häufigsten Anwendungsfälle die Performance verbessert wird~\cite{PeytonJones_FastCurry}.
 
-Andere Implementierungen in Haskell.
-Weniger Imperativ, dafür näher an Domäne der Verwender.
-GUI für Debugging und Nachvollziehen, was zur Laufzeit geschieht.
+Als andere Implementierung der \gls{stg}-Maschine existiert das Projekt \textit{STGi}~\cite{Luposchainsky_StgInterpreter}.
+Geschrieben in Haskell steht dieser Interpreter für die \gls{stg}-Sprache als Lehrbeispiel zur Verfügung.
+Mit einer textuellen Darstellung von Werten, Zuständen und Zustandsübergängen sowie implementierten Erweiterungen wie Black Holes, Garbage Collection und der Semantik aus~\cite{PeytonJones_FastCurry}, liegt der Fokus dieser Implementierung jedoch darauf, die Ausführung interaktiv zu begleiten.
+Die Arbeit, welche die \gls{stg} bei der Übersetzung in imperative Anweisungen betreibt, wird bei der Implementierung in Haskell nicht deutlich.
 
-Implementierung STG, produktives System, Optimierungen, Performance, Tooling.
-Standard und verwendbar.
+Die wohl wichtigste \gls{stg}-Implementierung befindet sich ebenfalls in der Domäne von Haskell.
+Der sogenannte GHC Haskell Compiler verwendet intern die \gls{stg}, um Maschinencode entweder nativ oder mittels LLVM zu erzeugen.
+Dabei bietet diese Implementierung nicht nur Unterstützung für viele Erweiterungen, Optimierungen, Tooling und Profiling, sondern stellt auch eine produktionsreife Ausführungsumgebung für Haskell bereit.
+Als de facto Standard für Haskell, ist hier die wohl ausgereifteste Implementierung zu finden.
+Geschrieben in Haskell, über Jahre gewachsen und mit Unterstützung für Optimierungen ist sie jedoch nicht als Lehrbeispiel geeignet.
 
-Zusammenfassend ist dieses Projekt als Lern- und Spielzeugprojekt zu betrachten.
-Der Hauptzweck der Implementierung ist es, innerhalb des Kurses \cn{KAPS} Erfahrungen zu sammeln, neue Berechnungsmodelle zu untersuchen und den Horizont zu erweitern.
+Zusammenfassend ist dieses Projekt eher als Lern- und Spielzeugprojekt zu einzuordnen.
+Der Hauptzweck der Implementierung ist es, innerhalb des Kurses \textit{CS5341~--~Kernel-Architekturen in Programmiersprachen} Erfahrungen  zu sammeln, neue Berechnungsmodelle zu untersuchen und den eigenen Horizont zu erweitern.
 
 %%% Local Variables:
 %%% mode: latex
