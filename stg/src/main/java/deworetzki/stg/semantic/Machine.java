@@ -157,24 +157,38 @@ public class Machine {
     public record ReturnInteger(int integer) implements State {
         @Override
         public State transfer(Machine machine) {
-            final Continuation continuation = machine.returnStack.pop();
+            if (machine.returnStack.isEmpty()) {
+                final UpdateFrame frame = machine.updateStack.pop();
+                frame.update(machine, ignored -> standardIntegerClosure());
+                return this; // Try again.
 
-            for (Alternative alternative : continuation.alternatives().alternatives) {
-                PrimitiveAlternative primitiveAlternative = (PrimitiveAlternative) alternative;
+            } else {
+                final Continuation continuation = machine.returnStack.pop();
 
-                if (integer == primitiveAlternative.literal.value) {
-                    return new Eval(primitiveAlternative.expression, continuation.savedEnvironment());
+                for (Alternative alternative : continuation.alternatives().alternatives) {
+                    PrimitiveAlternative primitiveAlternative = (PrimitiveAlternative) alternative;
+
+                    if (integer == primitiveAlternative.literal.value) {
+                        return new Eval(primitiveAlternative.expression, continuation.savedEnvironment());
+                    }
+                }
+
+                if (continuation.alternatives().defaultAlternative instanceof DefaultBindingAlternative def) {
+                    continuation.savedEnvironment().put(def.variable, new Int(integer));
+                    return new Eval(def.expression, continuation.savedEnvironment());
+                } else if (continuation.alternatives().defaultAlternative instanceof DefaultFallthroughAlternative def) {
+                    return new Eval(def.expression, continuation.savedEnvironment());
+                } else {
+                    throw new ErrorMessage.NoMatchingAlternative(continuation.alternatives(), this);
                 }
             }
+        }
 
-            if (continuation.alternatives().defaultAlternative instanceof DefaultBindingAlternative def) {
-                continuation.savedEnvironment().put(def.variable, new Int(integer));
-                return new Eval(def.expression, continuation.savedEnvironment());
-            } else if (continuation.alternatives().defaultAlternative instanceof DefaultFallthroughAlternative def) {
-                return new Eval(def.expression, continuation.savedEnvironment());
-            } else {
-                throw new ErrorMessage.NoMatchingAlternative(continuation.alternatives(), this);
-            }
+        private Closure standardIntegerClosure() {
+            return new Closure(
+                    new LambdaForm(emptyList(), false, emptyList(),
+                            new Literal(integer)),
+                    emptyList());
         }
     }
 
