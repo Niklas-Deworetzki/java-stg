@@ -5,13 +5,13 @@ import deworetzki.stg.syntax.*;
 import deworetzki.stg.visitor.DefaultVisitor;
 
 import java.util.*;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import static deworetzki.stg.semantic.Value.*;
 import static deworetzki.utils.CollectionUtils.combineWith;
 import static deworetzki.utils.CollectionUtils.take;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 
 public class Machine {
     public static final Variable MAIN = new Variable("main");
@@ -75,7 +75,7 @@ public class Machine {
     public record Enter(int address) implements State {
         @Override
         public State transfer(final Machine machine) {
-            Closure closure = machine.heap.get(address); // TODO: Blackhole?
+            Closure closure = machine.heap.get(address); // TODO: black hole?
 
             if (machine.argumentStack.size() < closure.code().parameters.size()) {
                 // Not enough arguments to enter the closure. We encountered an update.
@@ -86,8 +86,8 @@ public class Machine {
                 updatedBoundVals.addAll(machine.argumentStack);
 
                 final UpdateFrame frame = machine.updateStack.pop();
-                frame.update(machine, updated -> new Closure( // TODO: Do we need the previous closure here?
-                        new LambdaForm(updatedFreeVars, false, updatedParameters, updated.code().body),
+                frame.update(machine, new Closure( // New closure binds the arguments as free variables.
+                        new LambdaForm(updatedFreeVars, false, updatedParameters, closure.code().body),
                         updatedBoundVals
                 ));
 
@@ -119,7 +119,7 @@ public class Machine {
         public State transfer(Machine machine) {
             if (machine.returnStack.isEmpty()) {
                 final UpdateFrame frame = machine.updateStack.pop();
-                frame.update(machine, ignored -> standardConstructorClosure());
+                frame.update(machine, standardConstructorClosure());
                 return this; // Try again.
 
             } else {
@@ -167,7 +167,7 @@ public class Machine {
         public State transfer(Machine machine) {
             if (machine.returnStack.isEmpty()) {
                 final UpdateFrame frame = machine.updateStack.pop();
-                frame.update(machine, ignored -> standardIntegerClosure());
+                frame.update(machine, standardIntegerClosure());
                 return this; // Try again.
 
             } else {
@@ -363,8 +363,8 @@ public class Machine {
         }
 
         @Override
-        public void update(Machine machine, UnaryOperator<Closure> update) {
-            super.update(machine, update);
+        public void update(Machine machine, Closure closure) {
+            super.update(machine, closure);
             machine.isStopped = true; // Stop the evaluation.
         }
     }
