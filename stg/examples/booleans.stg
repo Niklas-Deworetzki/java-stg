@@ -1,0 +1,7 @@
+
+// Two numbers
+a = \ { } -> Int(3#)
+b = \ { } -> Int(4#)
+
+// Compare them.
+main = \ { } -> == (a b)

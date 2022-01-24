@@ -1,0 +1,10 @@
+
+// Create a list of all natural numbers.
+// nats = 0 : (map (+ 1) nats)
+nats = \ { } -> letrec +1   = \ { } -> +(one)
+                       tail = \ { +1 } -> map(+1 nats)
+                in Cons(zero tail)
+
+main = \ { } -> case length(nats) { // Evaluation will not terminate.
+                    of Int(r) -> r
+                }

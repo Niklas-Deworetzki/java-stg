@@ -1,0 +1,16 @@
+
+
+// Create a list of all natural numbers.
+// nats = 0 : (map (+ 1) nats)
+nats = \ { } -> letrec +1   = \ { } -> +(one)
+                       tail = \ { +1 } -> map(+1 nats)
+                in Cons(zero tail)
+
+// Only natural numbers greater than zero.
+nats+ = \ { } -> tail(nats)
+
+main = \ { } -> letrec size = \ { } -> Int(10#)
+              ns = \ { size } -> take(size nats+)
+       in case sum(ns) { // Force evaluation of primitive integer
+            of Int(r) -> r
+       }
