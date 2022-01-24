@@ -1,9 +1,13 @@
 
+// Common number "objects" are allocated once.
+zero = \ { } -> Int(0#)
+one  = \ { } -> Int(1#)
+
 // Manually define addition on non-primitive numbers
 + = \ {} x y -> case x {
-        of Int (kx) -> case y {
-            of Int (ky) -> case +# (kx ky) {
-                r -> Int (r)
+        of Int(kx) -> case y {
+            of Int(ky) -> case +# (kx ky) {
+                r -> Int(r)
             }
         }
 }
@@ -11,47 +15,54 @@
 // Use combinator to define other arithmetic operations.
 primitive-op = \ { } f ->
     let function = \ { f } x y -> case x {
-        of Int (kx) -> case y {
-            of Int (ky) -> case f (kx ky) {
-                r -> Int (r)
+        of Int(kx) -> case y {
+            of Int(ky) -> case f(kx ky) {
+                r -> Int(r)
             }
         }
     }
     in function
 
-- = \ { } -> let function = \ { } x y -> -# (x y) in primitive-op (function)
-* = \ { } -> let function = \ { } x y -> *# (x y) in primitive-op (function)
-/ = \ { } -> let function = \ { } x y -> /# (x y) in primitive-op (function)
+- = \ { } -> let function = \ { } x y -> -# (x y) in primitive-op(function)
+* = \ { } -> let function = \ { } x y -> *# (x y) in primitive-op(function)
+/ = \ { } -> let function = \ { } x y -> /# (x y) in primitive-op(function)
 
+// Boolean constants
+true = \ { } -> True
+false = \ { } -> False
+
+// Comparison operator defined for integers.
 == = \ { } x y -> case - (x y) {
-                    of Int (r) -> case r {
+                    of Int(r) -> case r {
                         of 0# -> True
                         default -> False
                     }
                 }
 
+// if-combinator returning a value, depending on the condition.
 if = \ { } c t f -> case c {
                     of True -> t
                     of False -> f
                 }
 
+// List operations
 nil = \ { } -> Nil
 
-cons = \ { } h t -> Cons (h t)
+cons = \ { } h t -> Cons(h t)
 
 head = \ { } xs -> case xs {
-    of Cons (h t) -> h
+    of Cons(h t) -> h
 }
 
 tail = \ { } xs -> case xs {
-    of Cons (h t) -> t
+    of Cons(h t) -> t
 }
 
 map = \ { } f xs -> case xs {
             of Nil -> Nil
-            of Cons (y ys) -> let fy  = \ { f y } -> f (y)
-                                  mfy = \ { f ys } -> map (f ys)
-                              in Cons (fy mfy)
+            of Cons(y ys) -> let fy  = \ { f y } -> f(y)
+                                  mfy = \ { f ys } -> map(f ys)
+                             in Cons(fy mfy)
 }
 
 
@@ -69,18 +80,15 @@ take = \ { } n xs -> case n {
 
 
 foldl = \ { } f z xs -> case xs {
-                            of Cons (h t) -> let z* = \ { f z h } -> f (z h)
-                                             in foldl (f z* t)
+                            of Cons(h t) -> let z' = \ { f z h } -> f(z h)
+                                            in foldl(f z' t)
                             of Nil -> z
                         }
 
-length = \ { } xs -> let one  = \ { } -> Int (1#)
-                         zero = \ { } -> Int (0#)
-                    in let add1 = \ { one } s ig -> + (s one)
-                    in foldl (add1 zero xs)
+length = \ { } xs -> let add1 = \ { } acc ignored -> + (acc one)
+                     in foldl (add1 zero xs)
 
-sum = \ { } xs -> let zero = \ { } -> Int (0#)
-                  in foldl (+ zero xs)
 
-product = \ { } xs -> let one = \ { } -> Int (1#)
-                      in foldl (* one xs)
+sum = \ { } xs -> foldl(+ zero xs)
+
+product = \ { } xs -> foldl(* one xs)
