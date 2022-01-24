@@ -9,6 +9,10 @@ import deworetzki.stg.visitor.Visitor;
 public final class Literal extends Expression implements Atom {
     public final int value;
 
+    public Literal(int value) {
+        this(Position.NONE, value);
+    }
+
     public Literal(Position position, int value) {
         super(position);
         this.value = value;
