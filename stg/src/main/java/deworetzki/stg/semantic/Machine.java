@@ -5,6 +5,7 @@ import deworetzki.stg.syntax.*;
 import deworetzki.stg.visitor.DefaultVisitor;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import static deworetzki.stg.semantic.Value.*;
@@ -13,7 +14,8 @@ import static deworetzki.utils.CollectionUtils.take;
 import static java.util.Collections.*;
 
 public class Machine {
-    public static final Expression ENTRY_POINT = new FunctionApplication(new Variable("main"), emptyList());
+    public static final Variable MAIN = new Variable("main");
+    public static final Expression ENTRY_POINT = new FunctionApplication(MAIN, emptyList());
 
     private final Heap heap = new Heap();
     private final Map<Variable, Value> globalEnvironment;
@@ -30,14 +32,20 @@ public class Machine {
     private Deque<Continuation> returnStack = emptyStack();
     private final Deque<UpdateFrame> updateStack = emptyStack();
 
+    private boolean isStopped;
+
     public Machine(Program program) {
         this.globalEnvironment = allocateAll(heap, program.bindings, emptyMap(), true);
     }
 
-    public void step() {
-        state = state.transfer(this);
+    public Closure run() {
+        final int mainAddress = globalEnvironment.get(MAIN).getValue();
+        updateStack.push(new EndOfEvaluation(mainAddress));
+        while (!isStopped) {
+            state = state.transfer(this);
+        }
+        return heap.get(mainAddress);
     }
-
 
     /**
      * The {@link Machine machine state} can take on different forms, that describe
@@ -343,5 +351,21 @@ public class Machine {
 
     public Deque<UpdateFrame> getUpdateStack() {
         return updateStack;
+    }
+
+    /**
+     * A special {@link UpdateFrame} that does not only update the {@link Closure} on the {@link Heap}
+     * but also stops the evaluation of the {@link Machine}.
+     */
+    private static class EndOfEvaluation extends UpdateFrame {
+        public EndOfEvaluation(int address) {
+            super(emptyStack(), emptyStack(), address);
+        }
+
+        @Override
+        public void update(Machine machine, UnaryOperator<Closure> update) {
+            super.update(machine, update);
+            machine.isStopped = true; // Stop the evaluation.
+        }
     }
 }
