@@ -78,12 +78,8 @@ public class Machine {
                 updatedBoundVals.addAll(machine.argumentStack);
 
                 final UpdateFrame frame = machine.updateStack.pop();
-                // Restore return stack and append restored argument stack.
-                machine.returnStack = frame.returnStack();
-                machine.argumentStack.addAll(frame.argumentStack());
-
-                machine.heap.update(frame.address(), new Closure(
-                        new LambdaForm(updatedFreeVars, false, updatedParameters, machine.heap.get(frame.address()).code().body),
+                frame.update(machine, updated -> new Closure( // TODO: Do we need the previous closure here?
+                        new LambdaForm(updatedFreeVars, false, updatedParameters, updated.code().body),
                         updatedBoundVals
                 ));
 
@@ -115,13 +111,7 @@ public class Machine {
         public State transfer(Machine machine) {
             if (machine.returnStack.isEmpty()) {
                 final UpdateFrame frame = machine.updateStack.pop();
-                // Restore argument and return stack.
-                machine.argumentStack = frame.argumentStack();
-                machine.returnStack = frame.returnStack();
-
-                // Update address with a new closure
-                machine.heap.update(frame.address(), standardConstructorClosure());
-
+                frame.update(machine, ignored -> standardConstructorClosure());
                 return this; // Try again.
 
             } else {
