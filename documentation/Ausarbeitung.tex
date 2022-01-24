@@ -14,7 +14,6 @@
 
 \usepackage[T1]{fontenc}             % Umlaute und Sonderzeichen
 \usepackage[utf8]{inputenc}          % für Eingabe und Ausgabe
-\usepackage{scrhack}                 % unterdrückt Fehlermeldung von listings
 \usepackage{parskip}
 
 \usepackage{amsmath}                 % Mathematik
@@ -27,12 +26,10 @@
 \usepackage[export]{adjustbox}
 \usepackage[a4paper]{geometry}
 \usepackage[titles,subfigure]{tocloft}
-\usepackage{float}
 
 % Formatierungen für Text, Überschriften, Inhaltsverzeichnis, etc.
 \usepackage{fancyhdr}
 \usepackage[nottoc]{tocbibind}
-\usepackage{blindtext}
 \usepackage{helvet}
 \usepackage[lighttt]{lmodern}
 
@@ -53,11 +50,6 @@ pdftitle={\MyTitle{}~--~\MyTopic{}}]{hyperref}
 \usepackage{listingsutf8}  % Codeblöcke mit UTF-8 (Umlaute)
 \usepackage{lstautogobble} % Entfernt führende Leerzeichen in Codeblöcken
 % lstautogobble=false zum deaktivieren für einzelne Codeblöcke
-
-% Grafikbibliothek zum Erstellen eigener Diagramme
-\usepackage{tikz}
-\usetikzlibrary{decorations.pathreplacing,shapes,arrows,positioning}
-
 
 %------------------------------------------------------------------------------
 % THM Farbdefinitionen
